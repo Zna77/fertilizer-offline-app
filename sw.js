@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v3";
+const CACHE_VERSION = "v4";
 const ASSET_CACHE = `fertilizer-assets-${CACHE_VERSION}`;
 const CORE_ASSETS = [
   "./",
@@ -11,6 +11,7 @@ const CORE_ASSETS = [
   "./src/models.js",
   "./src/ui.js",
   "./src/calc.js",
+  "./src/i18n.js",
   "./manifest.webmanifest",
   "./icons/icon.svg",
 ];

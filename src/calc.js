@@ -1,4 +1,5 @@
 import { normalizeName, normalizeUnit, parseNumber } from "./models.js";
+import { t } from "./i18n.js";
 
 function mergeFertilizers(programCode, fertilizers) {
   const combined = new Map();
@@ -11,18 +12,18 @@ function mergeFertilizers(programCode, fertilizers) {
     const value = parseNumber(fertilizer.value);
 
     if (!name) {
-      warnings.push(`Skipped unnamed fertilizer in program ${programCode}.`);
+      warnings.push(t("calc.skippedUnnamed", { code: programCode }));
       return;
     }
 
     if (!unit) {
-      warnings.push(`Skipped ${name} in ${programCode}: unit must be kg or L.`);
+      warnings.push(t("calc.skippedUnit", { name, code: programCode }));
       return;
     }
 
     if (!Number.isFinite(value) || value <= 0) {
       warnings.push(
-        `Skipped ${name} in ${programCode}: value must be greater than 0.`
+        t("calc.skippedValue", { name, code: programCode })
       );
       return;
     }
@@ -36,14 +37,19 @@ function mergeFertilizers(programCode, fertilizers) {
     const existing = combined.get(key);
     if (existing.unit !== unit) {
       errors.push(
-        `Unit mismatch inside program ${programCode} for ${name}: ${existing.unit} vs ${unit}.`
+        t("calc.unitMismatchProgram", {
+          code: programCode,
+          name,
+          unitA: existing.unit,
+          unitB: unit,
+        })
       );
       return;
     }
 
     existing.value += value;
     warnings.push(
-      `Duplicate fertilizer ${name} in program ${programCode}; values combined.`
+      t("calc.duplicateCombined", { name, code: programCode })
     );
   });
 
@@ -82,7 +88,11 @@ export function aggregateConsumption(consumptionRows, programsByCode) {
       const existing = totals.get(key);
       if (existing.unit !== fertilizer.unit) {
         errors.push(
-          `Unit mismatch for ${key}: ${existing.unit} vs ${fertilizer.unit}.`
+          t("calc.unitMismatchTotals", {
+            name: key,
+            unitA: existing.unit,
+            unitB: fertilizer.unit,
+          })
         );
         return;
       }

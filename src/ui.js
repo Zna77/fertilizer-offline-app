@@ -1,4 +1,5 @@
 import { formatNumber } from "./models.js";
+import { getLanguage, t } from "./i18n.js";
 
 const $ = (id) => document.getElementById(id);
 const makeId = () =>
@@ -19,6 +20,7 @@ export const els = {
   searchInput: $("searchInput"),
   newProgramBtn: $("newProgramBtn"),
   seedBtn: $("seedBtn"),
+  languageSelect: $("languageSelect"),
 
   modalBackdrop: $("modalBackdrop"),
   modalTitle: $("modalTitle"),
@@ -42,10 +44,15 @@ export const els = {
   reportTimestamp: $("reportTimestamp"),
 };
 
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
+const dateFormatOptions = {
   dateStyle: "medium",
   timeStyle: "short",
-});
+};
+
+function formatDate(value) {
+  const formatter = new Intl.DateTimeFormat(getLanguage(), dateFormatOptions);
+  return formatter.format(new Date(value));
+}
 
 export function setNotice(el, text, tone = "info") {
   el.textContent = text || "";
@@ -60,14 +67,17 @@ export function setDbStatus(text, tone = "info") {
 
 export function setNetworkStatus(isOnline) {
   if (!els.netStatus) return;
-  els.netStatus.textContent = isOnline ? "Online" : "Offline";
+  els.netStatus.textContent = isOnline
+    ? t("status.online")
+    : t("status.offline");
   els.netStatus.dataset.tone = isOnline ? "info" : "warn";
 }
 
 export function renderProgramsState({ loading, error, programs, query }) {
   if (loading) {
-    els.programsBody.innerHTML =
-      '<tr><td colspan="4" class="muted">Loading programs...</td></tr>';
+    els.programsBody.innerHTML = `<tr><td colspan="4" class="muted">${t(
+      "table.loadingPrograms"
+    )}</td></tr>`;
     return;
   }
 
@@ -85,15 +95,16 @@ export function renderProgramsTable(programs, query) {
     .sort((a, b) => a.code.localeCompare(b.code));
 
   if (!filtered.length) {
-    els.programsBody.innerHTML =
-      '<tr><td colspan="4" class="muted">No programs yet. Click "New Program".</td></tr>';
+    els.programsBody.innerHTML = `<tr><td colspan="4" class="muted">${t(
+      "table.noPrograms"
+    )}</td></tr>`;
     return;
   }
 
   els.programsBody.innerHTML = filtered
     .map((program) => {
       const updated = program.updatedAt
-        ? dateFormatter.format(new Date(program.updatedAt))
+        ? formatDate(program.updatedAt)
         : "-";
       const fertCount = Array.isArray(program.fertilizers)
         ? program.fertilizers.length
@@ -105,9 +116,15 @@ export function renderProgramsTable(programs, query) {
         <td class="right">${updated}</td>
         <td class="right">
           <div class="row actions">
-            <button class="btn btn-secondary" data-action="edit" data-code="${program.code}">Edit</button>
-            <button class="btn btn-secondary" data-action="duplicate" data-code="${program.code}">Duplicate</button>
-            <button class="btn btn-secondary" data-action="template" data-code="${program.code}">Template</button>
+            <button class="btn btn-secondary" data-action="edit" data-code="${program.code}">${t(
+              "actions.edit"
+            )}</button>
+            <button class="btn btn-secondary" data-action="duplicate" data-code="${program.code}">${t(
+              "actions.duplicate"
+            )}</button>
+            <button class="btn btn-secondary" data-action="template" data-code="${program.code}">${t(
+              "actions.template"
+            )}</button>
           </div>
         </td>
       </tr>`;
@@ -123,16 +140,26 @@ export function makeConsumptionRow({ code = "", times = 1 } = {}) {
 
   row.innerHTML = `
     <div class="field">
-      <label class="label" for="consumption-code-${rowId}">Program code</label>
-      <input class="input" id="consumption-code-${rowId}" data-role="code" placeholder="N02" value="${code}" autocomplete="off">
+      <label class="label" for="consumption-code-${rowId}">${t(
+        "labels.programCode"
+      )}</label>
+      <input class="input" id="consumption-code-${rowId}" data-role="code" placeholder="${t(
+        "placeholders.programCode"
+      )}" value="${code}" autocomplete="off">
     </div>
     <div class="field">
-      <label class="label" for="consumption-times-${rowId}">Times</label>
-      <input class="input" id="consumption-times-${rowId}" data-role="times" type="number" inputmode="decimal" min="0" step="0.1" placeholder="1" value="${times}">
+      <label class="label" for="consumption-times-${rowId}">${t(
+        "labels.times"
+      )}</label>
+      <input class="input" id="consumption-times-${rowId}" data-role="times" type="number" inputmode="decimal" min="0" step="0.1" placeholder="${t(
+        "placeholders.times"
+      )}" value="${times}">
     </div>
     <div class="field compact">
-      <label class="label" aria-hidden="true">Remove</label>
-      <button class="icon-btn" data-role="remove" type="button" title="Remove row">Remove</button>
+      <label class="label" aria-hidden="true">${t("labels.remove")}</label>
+      <button class="icon-btn" data-role="remove" type="button" title="${t(
+        "labels.remove"
+      )}">${t("labels.remove")}</button>
     </div>
   `;
 
@@ -153,6 +180,11 @@ export function getConsumptionInputRows() {
   }));
 }
 
+export function rebuildConsumptionRows(rows) {
+  els.consumptionRows.innerHTML = "";
+  rows.forEach((row) => makeConsumptionRow(row));
+}
+
 export function renderSummary({ totals, used, missing, warnings, errors, timestamp }) {
   const usedText = used.length
     ? used.map((item) => `${item.code}x${item.times}`).join(", ")
@@ -162,14 +194,15 @@ export function renderSummary({ totals, used, missing, warnings, errors, timesta
   els.summaryCount.textContent = totals.length ? String(totals.length) : "-";
   if (els.reportTimestamp) {
     els.reportTimestamp.textContent = timestamp
-      ? dateFormatter.format(new Date(timestamp))
+      ? formatDate(timestamp)
       : "-";
   }
 
   if (!totals.length) {
     els.summaryBody.removeAttribute("data-state");
-    els.summaryBody.innerHTML =
-      '<tr><td colspan="3" class="muted">No results yet.</td></tr>';
+    els.summaryBody.innerHTML = `<tr><td colspan="3" class="muted">${t(
+      "table.noResults"
+    )}</td></tr>`;
   } else {
     els.summaryBody.dataset.state = "ready";
     const rows = totals
@@ -188,7 +221,7 @@ export function renderSummary({ totals, used, missing, warnings, errors, timesta
 
   const messages = [];
   if (missing.length) {
-    messages.push(`Missing program(s): ${missing.join(", ")}.`);
+    messages.push(t("messages.missingPrograms", { codes: missing.join(", ") }));
   }
   if (warnings.length) {
     messages.push(warnings.join(" "));
@@ -203,8 +236,9 @@ export function renderSummary({ totals, used, missing, warnings, errors, timesta
 
 export function renderTemplatesTable(templates) {
   if (!templates.length) {
-    els.templatesBody.innerHTML =
-      '<tr><td colspan="3" class="muted">No templates yet.</td></tr>';
+    els.templatesBody.innerHTML = `<tr><td colspan="3" class="muted">${t(
+      "table.noTemplates"
+    )}</td></tr>`;
     return;
   }
 
@@ -220,8 +254,12 @@ export function renderTemplatesTable(templates) {
         <td class="right">${count}</td>
         <td class="right">
           <div class="row actions">
-            <button class="btn btn-secondary" data-action="use" data-id="${template.id}">Use</button>
-            <button class="btn btn-secondary" data-action="delete" data-id="${template.id}">Delete</button>
+            <button class="btn btn-secondary" data-action="use" data-id="${template.id}">${t(
+              "actions.use"
+            )}</button>
+            <button class="btn btn-secondary" data-action="delete" data-id="${template.id}">${t(
+              "actions.delete"
+            )}</button>
           </div>
         </td>
       </tr>`;
@@ -231,8 +269,9 @@ export function renderTemplatesTable(templates) {
 
 export function renderHistoryTable(entries) {
   if (!entries.length) {
-    els.historyBody.innerHTML =
-      '<tr><td colspan="4" class="muted">No history yet.</td></tr>';
+    els.historyBody.innerHTML = `<tr><td colspan="4" class="muted">${t(
+      "table.noHistory"
+    )}</td></tr>`;
     return;
   }
 
@@ -240,13 +279,13 @@ export function renderHistoryTable(entries) {
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .map((entry) => {
       const when = entry.createdAt
-        ? dateFormatter.format(new Date(entry.createdAt))
+        ? formatDate(entry.createdAt)
         : "-";
       const used = entry.used?.length
         ? entry.used.map((item) => `${item.code}x${item.times}`).join(", ")
         : "-";
       const missing = entry.missing?.length
-        ? ` (missing: ${entry.missing.join(", ")})`
+        ? t("messages.missingShort", { codes: entry.missing.join(", ") })
         : "";
       const count = entry.totals?.length ? entry.totals.length : 0;
       return `
@@ -256,9 +295,15 @@ export function renderHistoryTable(entries) {
         <td class="right">${count}</td>
         <td class="right">
           <div class="row actions">
-            <button class="btn btn-secondary" data-action="view" data-id="${entry.id}">View</button>
-            <button class="btn btn-secondary" data-action="export" data-id="${entry.id}">Export</button>
-            <button class="btn btn-secondary" data-action="delete" data-id="${entry.id}">Delete</button>
+            <button class="btn btn-secondary" data-action="view" data-id="${entry.id}">${t(
+              "actions.view"
+            )}</button>
+            <button class="btn btn-secondary" data-action="export" data-id="${entry.id}">${t(
+              "actions.export"
+            )}</button>
+            <button class="btn btn-secondary" data-action="delete" data-id="${entry.id}">${t(
+              "actions.delete"
+            )}</button>
           </div>
         </td>
       </tr>`;
@@ -313,23 +358,33 @@ export function addFertilizerRow(data = {}) {
 
   row.innerHTML = `
     <div class="field">
-      <label class="label" for="fert-name-${rowId}">Fertilizer</label>
-      <input class="input" id="fert-name-${rowId}" data-role="name" placeholder="NITRATE CALCIUM" value="${name}">
+      <label class="label" for="fert-name-${rowId}">${t(
+        "labels.fertilizer"
+      )}</label>
+      <input class="input" id="fert-name-${rowId}" data-role="name" placeholder="${t(
+        "placeholders.fertilizerName"
+      )}" value="${name}">
     </div>
     <div class="field">
-      <label class="label" for="fert-value-${rowId}">Value</label>
-      <input class="input" id="fert-value-${rowId}" data-role="value" placeholder="0.35" inputmode="decimal" value="${value}">
+      <label class="label" for="fert-value-${rowId}">${t(
+        "labels.value"
+      )}</label>
+      <input class="input" id="fert-value-${rowId}" data-role="value" placeholder="${t(
+        "placeholders.fertilizerValue"
+      )}" inputmode="decimal" value="${value}">
     </div>
     <div class="field compact">
-      <label class="label" for="fert-unit-${rowId}">Unit</label>
+      <label class="label" for="fert-unit-${rowId}">${t("labels.unit")}</label>
       <select class="select" id="fert-unit-${rowId}" data-role="unit">
         <option value="kg" ${unit === "kg" ? "selected" : ""}>kg</option>
         <option value="L" ${unit === "L" ? "selected" : ""}>L</option>
       </select>
     </div>
     <div class="field compact">
-      <label class="label" aria-hidden="true">Remove</label>
-      <button type="button" class="icon-btn" data-role="remove" title="Remove fertilizer">Remove</button>
+      <label class="label" aria-hidden="true">${t("labels.remove")}</label>
+      <button type="button" class="icon-btn" data-role="remove" title="${t(
+        "labels.remove"
+      )}">${t("labels.remove")}</button>
     </div>
   `;
 
@@ -367,6 +422,9 @@ export function initUI(handlers) {
   }
   if (els.historyBody) {
     els.historyBody.addEventListener("click", handlers.onHistoryAction);
+  }
+  if (els.languageSelect && handlers.onLanguageChange) {
+    els.languageSelect.addEventListener("change", handlers.onLanguageChange);
   }
 
   els.newProgramBtn.addEventListener("click", handlers.onNewProgram);

@@ -1,3 +1,5 @@
+import { t } from "./i18n.js";
+
 const CODE_PATTERN = /^[A-Z0-9][A-Z0-9-_]*$/;
 const UNIT_ALIASES = new Map([
   ["kg", "kg"],
@@ -71,12 +73,14 @@ export function normalizeConsumptionRows(rows) {
     if (!code && !row.times) return;
 
     if (!code) {
-      warnings.push(`Row ${index + 1}: program code is required.`);
+      warnings.push(
+        t("validation.rowProgramRequired", { index: index + 1 })
+      );
       return;
     }
 
     if (!Number.isFinite(times) || times <= 0) {
-      warnings.push(`Row ${index + 1}: times must be a positive number.`);
+      warnings.push(t("validation.rowTimesInvalid", { index: index + 1 }));
       return;
     }
 
@@ -104,15 +108,21 @@ export function parseFertilizerRows(rows) {
     const value = parseNumber(rawValue);
 
     if (!name) {
-      errors.push(`Row ${index + 1}: fertilizer name is required.`);
+      errors.push(
+        t("validation.rowFertilizerNameRequired", { index: index + 1 })
+      );
     }
 
     if (!Number.isFinite(value) || value <= 0) {
-      errors.push(`Row ${index + 1}: value must be greater than 0.`);
+      errors.push(
+        t("validation.rowFertilizerValueInvalid", { index: index + 1 })
+      );
     }
 
     if (!unit) {
-      errors.push(`Row ${index + 1}: unit must be kg or L.`);
+      errors.push(
+        t("validation.rowFertilizerUnitInvalid", { index: index + 1 })
+      );
     }
 
     if (name) {
@@ -128,7 +138,9 @@ export function parseFertilizerRows(rows) {
 
   if (duplicates.size) {
     errors.push(
-      `Duplicate fertilizer names: ${[...duplicates].sort().join(", ")}.`
+      t("validation.duplicateFertilizers", {
+        names: [...duplicates].sort().join(", "),
+      })
     );
   }
 
@@ -145,15 +157,13 @@ export function buildProgram(raw) {
   const { items, errors } = parseFertilizerRows(raw.fertilizers || []);
 
   if (!code) {
-    errors.unshift("Program code is required.");
+    errors.unshift(t("validation.programCodeRequired"));
   } else if (!isValidCode(code)) {
-    errors.unshift(
-      "Program code can only use letters, numbers, hyphen, or underscore."
-    );
+    errors.unshift(t("validation.programCodeInvalid"));
   }
 
   if (items.length === 0) {
-    errors.push("Add at least one fertilizer.");
+    errors.push(t("validation.fertilizerRequired"));
   }
 
   return {

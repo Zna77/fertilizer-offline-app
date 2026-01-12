@@ -16,25 +16,52 @@
         <div class="brand">
           <div class="logo" aria-hidden="true">F</div>
           <div>
-            <p class="kicker">Fertilizer Programs</p>
-            <h1>Offline Program Manager</h1>
+            <p class="kicker" data-i18n="app.kicker">Fertilizer Programs</p>
+            <h1 data-i18n="app.title">Offline Program Manager</h1>
           </div>
         </div>
 
         <div class="status">
-          <span id="dbStatus" class="status-chip" data-tone="info"
+          <span
+            id="dbStatus"
+            class="status-chip"
+            data-tone="info"
+            data-i18n="status.dbLoading"
             >DB Loading</span
           >
-          <span id="netStatus" class="status-chip" data-tone="info"
+          <span
+            id="netStatus"
+            class="status-chip"
+            data-tone="info"
+            data-i18n="status.online"
             >Online</span
           >
         </div>
 
         <div class="topbar-actions">
-          <button id="seedBtn" class="btn btn-secondary" type="button">
+          <div class="lang-select">
+            <label class="sr-only" for="languageSelect" data-i18n="labels.language"
+              >Language</label
+            >
+            <select id="languageSelect" class="select select-small">
+              <option value="en" data-i18n="language.english">English</option>
+              <option value="fr" data-i18n="language.french">Francais</option>
+            </select>
+          </div>
+          <button
+            id="seedBtn"
+            class="btn btn-secondary"
+            type="button"
+            data-i18n="actions.seed"
+          >
             Seed
           </button>
-          <button id="newProgramBtn" class="btn btn-primary" type="button">
+          <button
+            id="newProgramBtn"
+            class="btn btn-primary"
+            type="button"
+            data-i18n="actions.newProgram"
+          >
             New Program
           </button>
         </div>
@@ -44,8 +71,8 @@
         <section class="panel print-panel">
           <div class="panel-head">
             <div>
-              <h2>Daily Consumption</h2>
-              <p class="muted">
+              <h2 data-i18n="titles.dailyConsumption">Daily Consumption</h2>
+              <p class="muted" data-i18n="help.dailyConsumption">
                 Add program codes and times. Example: N02 x 3, N03 x 1.
               </p>
             </div>
@@ -60,10 +87,16 @@
                   id="addConsumptionRowBtn"
                   class="btn btn-secondary"
                   type="button"
+                  data-i18n="actions.addProgram"
                 >
                   Add program
                 </button>
-                <button id="calcBtn" class="btn btn-primary" type="button">
+                <button
+                  id="calcBtn"
+                  class="btn btn-primary"
+                  type="button"
+                  data-i18n="actions.calculate"
+                >
                   Calculate
                 </button>
               </div>
@@ -79,20 +112,26 @@
             <div class="panel-col print-report">
               <div class="summary">
                 <div class="summary-item">
-                  <div class="muted">Programs used</div>
+                  <div class="muted" data-i18n="labels.programsUsed">Programs used</div>
                   <div id="summaryPrograms" class="summary-value">-</div>
                 </div>
                 <div class="summary-item">
-                  <div class="muted">Total items</div>
+                  <div class="muted" data-i18n="labels.totalItems">Total items</div>
                   <div id="summaryCount" class="summary-value">-</div>
                 </div>
               </div>
 
               <div class="row between report-actions">
                 <div id="reportMeta" class="report-meta muted">
-                  Last calculation: <span id="reportTimestamp">-</span>
+                  <span data-i18n="report.lastCalculation">Last calculation</span>:
+                  <span id="reportTimestamp">-</span>
                 </div>
-                <button id="printReportBtn" class="btn btn-secondary" type="button">
+                <button
+                  id="printReportBtn"
+                  class="btn btn-secondary"
+                  type="button"
+                  data-i18n="actions.printReport"
+                >
                   Print report
                 </button>
               </div>
@@ -101,14 +140,16 @@
                 <table class="table">
                   <thead>
                     <tr>
-                      <th>Fertilizer</th>
-                      <th class="right">Total</th>
-                      <th>Unit</th>
+                      <th data-i18n="labels.fertilizer">Fertilizer</th>
+                      <th class="right" data-i18n="labels.total">Total</th>
+                      <th data-i18n="labels.unit">Unit</th>
                     </tr>
                   </thead>
                   <tbody id="summaryBody">
                     <tr>
-                      <td colspan="3" class="muted">No results yet.</td>
+                      <td colspan="3" class="muted" data-i18n="table.noResults">
+                        No results yet.
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -120,18 +161,21 @@
         <section class="panel print-hidden">
           <div class="panel-head between">
             <div>
-              <h2>Programs</h2>
-              <p class="muted">
+              <h2 data-i18n="titles.programs">Programs</h2>
+              <p class="muted" data-i18n="help.programs">
                 Create, edit, and delete fertilizer recipes stored offline.
               </p>
             </div>
             <div class="row">
-              <label class="sr-only" for="searchInput">Search programs</label>
+              <label class="sr-only" for="searchInput" data-i18n="labels.searchPrograms"
+                >Search programs</label
+              >
               <input
                 id="searchInput"
                 class="input"
                 type="search"
                 placeholder="Search program code"
+                data-i18n-placeholder="placeholders.searchProgram"
                 autocomplete="off"
               />
             </div>
@@ -141,15 +185,17 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th>Code</th>
-                  <th class="right">Fertilizers</th>
-                  <th class="right">Updated</th>
-                  <th class="right">Actions</th>
+                  <th data-i18n="labels.programCode">Code</th>
+                  <th class="right" data-i18n="labels.fertilizers">Fertilizers</th>
+                  <th class="right" data-i18n="labels.updated">Updated</th>
+                  <th class="right" data-i18n="labels.actions">Actions</th>
                 </tr>
               </thead>
               <tbody id="programsBody">
                 <tr>
-                  <td colspan="4" class="muted">Loading programs...</td>
+                  <td colspan="4" class="muted" data-i18n="table.loadingPrograms">
+                    Loading programs...
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -159,8 +205,8 @@
         <section class="panel print-hidden">
           <div class="panel-head between">
             <div>
-              <h2>Templates</h2>
-              <p class="muted">
+              <h2 data-i18n="titles.templates">Templates</h2>
+              <p class="muted" data-i18n="help.templates">
                 Save programs as templates and reuse them for new programs.
               </p>
             </div>
@@ -170,14 +216,16 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th class="right">Fertilizers</th>
-                  <th class="right">Actions</th>
+                  <th data-i18n="labels.name">Name</th>
+                  <th class="right" data-i18n="labels.fertilizers">Fertilizers</th>
+                  <th class="right" data-i18n="labels.actions">Actions</th>
                 </tr>
               </thead>
               <tbody id="templatesBody">
                 <tr>
-                  <td colspan="3" class="muted">No templates yet.</td>
+                  <td colspan="3" class="muted" data-i18n="table.noTemplates">
+                    No templates yet.
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -187,14 +235,26 @@
         <section class="panel print-hidden">
           <div class="panel-head between">
             <div>
-              <h2>History</h2>
-              <p class="muted">Recent calculations with timestamps.</p>
+              <h2 data-i18n="titles.history">History</h2>
+              <p class="muted" data-i18n="help.history">
+                Recent calculations with timestamps.
+              </p>
             </div>
             <div class="row">
-              <button id="exportHistoryBtn" class="btn btn-secondary" type="button">
+              <button
+                id="exportHistoryBtn"
+                class="btn btn-secondary"
+                type="button"
+                data-i18n="actions.exportJson"
+              >
                 Export JSON
               </button>
-              <button id="clearHistoryBtn" class="btn btn-danger" type="button">
+              <button
+                id="clearHistoryBtn"
+                class="btn btn-danger"
+                type="button"
+                data-i18n="actions.clear"
+              >
                 Clear
               </button>
             </div>
@@ -204,15 +264,17 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th>When</th>
-                  <th>Programs</th>
-                  <th class="right">Items</th>
-                  <th class="right">Actions</th>
+                  <th data-i18n="labels.when">When</th>
+                  <th data-i18n="labels.programs">Programs</th>
+                  <th class="right" data-i18n="labels.items">Items</th>
+                  <th class="right" data-i18n="labels.actions">Actions</th>
                 </tr>
               </thead>
               <tbody id="historyBody">
                 <tr>
-                  <td colspan="4" class="muted">No history yet.</td>
+                  <td colspan="4" class="muted" data-i18n="table.noHistory">
+                    No history yet.
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -224,8 +286,15 @@
     <div id="modalBackdrop" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal">
         <div class="modal-head row between">
-          <h3 id="modalTitle">New Program</h3>
-          <button id="closeModalBtn" class="icon-btn" type="button" title="Close">
+          <h3 id="modalTitle" data-i18n="titles.newProgram">New Program</h3>
+          <button
+            id="closeModalBtn"
+            class="icon-btn"
+            type="button"
+            title="Close"
+            data-i18n="actions.close"
+            data-i18n-title="actions.close"
+          >
             Close
           </button>
         </div>
@@ -233,29 +302,42 @@
         <form id="programForm" class="modal-body" autocomplete="off">
           <div class="grid grid-2">
             <div class="field">
-              <label class="label" for="programCode">Program code</label>
+              <label class="label" for="programCode" data-i18n="labels.programCode"
+                >Program code</label
+              >
               <input
                 id="programCode"
                 class="input"
                 placeholder="N02"
+                data-i18n-placeholder="placeholders.programCode"
                 required
               />
-              <div class="help muted">Unique code. Example: N01, N02.</div>
+              <div class="help muted" data-i18n="help.uniqueCode">
+                Unique code. Example: N01, N02.
+              </div>
             </div>
 
             <div class="field">
-              <label class="label" for="programNotes">Notes (optional)</label>
+              <label class="label" for="programNotes" data-i18n="labels.notesOptional"
+                >Notes (optional)</label
+              >
               <input
                 id="programNotes"
                 class="input"
                 placeholder="e.g. Winter mix"
+                data-i18n-placeholder="placeholders.programNotes"
               />
             </div>
           </div>
 
           <div class="row between">
-            <label class="label">Fertilizers</label>
-            <button type="button" id="addFertRowBtn" class="btn btn-secondary">
+            <label class="label" data-i18n="labels.fertilizers">Fertilizers</label>
+            <button
+              type="button"
+              id="addFertRowBtn"
+              class="btn btn-secondary"
+              data-i18n="actions.addFertilizer"
+            >
               Add fertilizer
             </button>
           </div>
@@ -269,10 +351,13 @@
                 type="button"
                 id="deleteProgramBtn"
                 class="btn btn-danger hidden"
+                data-i18n="actions.delete"
               >
                 Delete
               </button>
-              <button type="submit" class="btn btn-primary">Save</button>
+              <button type="submit" class="btn btn-primary" data-i18n="actions.save">
+                Save
+              </button>
             </div>
           </div>
         </form>
