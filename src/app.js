@@ -139,6 +139,7 @@ async function handleCalculate() {
     const entry = {
       id: makeId(),
       createdAt: timestamp,
+      inputs: normalized,
       used: result.used,
       missing: result.missing,
       totals: result.totals,
@@ -408,6 +409,26 @@ async function handleHistoryAction(event) {
     };
     setState({ lastSummary: summary });
     UI.renderSummary(summary);
+    const rows = entry.inputs?.length ? entry.inputs : entry.used || [];
+    if (rows.length) {
+      UI.rebuildConsumptionRows(
+        rows.map((item) => ({ code: item.code, times: item.times }))
+      );
+    }
+    UI.setNotice(
+      UI.els.calcMessage,
+      t("messages.viewingHistory", {
+        date: entry.createdAt ? new Date(entry.createdAt).toLocaleString() : "-",
+      }),
+      "info"
+    );
+    const panel = document.getElementById("summaryPanel");
+    if (panel) {
+      panel.classList.remove("flash");
+      void panel.offsetWidth;
+      panel.classList.add("flash");
+      panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
     return;
   }
 
