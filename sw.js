@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v5";
+const CACHE_VERSION = "v6";
 const ASSET_CACHE = `fertilizer-assets-${CACHE_VERSION}`;
 const CORE_ASSETS = [
   "./",

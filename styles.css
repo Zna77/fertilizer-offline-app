@@ -34,6 +34,10 @@ body {
     linear-gradient(180deg, var(--bg), var(--bg-deep));
 }
 
+html[dir="rtl"] body {
+  font-family: "Noto Naskh Arabic", "Amiri", "Tahoma", "Arial", sans-serif;
+}
+
 body::before {
   content: "";
   position: fixed;

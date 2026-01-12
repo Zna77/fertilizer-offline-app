@@ -1,5 +1,6 @@
 const STORAGE_KEY = "fertilizer_lang";
-const SUPPORTED_LANGS = ["en", "fr"];
+const SUPPORTED_LANGS = ["en", "fr", "ar"];
+const RTL_LANGS = new Set(["ar"]);
 
 const translations = {
   en: {
@@ -11,6 +12,7 @@ const translations = {
     language: {
       english: "English",
       french: "Francais",
+      arabic: "Arabic",
     },
     status: {
       dbLoading: "DB Loading",
@@ -160,6 +162,7 @@ const translations = {
     language: {
       english: "Anglais",
       french: "Francais",
+      arabic: "Arabe",
     },
     status: {
       dbLoading: "BD chargement",
@@ -300,6 +303,156 @@ const translations = {
         "Incoherence unite pour {name}: {unitA} vs {unitB}.",
     },
   },
+  ar: {
+    app: {
+      kicker: "برامج الأسمدة",
+      title: "مدير البرامج بدون إنترنت",
+      documentTitle: "برامج الأسمدة بدون إنترنت",
+    },
+    language: {
+      english: "الإنجليزية",
+      french: "الفرنسية",
+      arabic: "العربية",
+    },
+    status: {
+      dbLoading: "تحميل قاعدة البيانات",
+      dbReady: "قاعدة البيانات جاهزة",
+      dbError: "خطأ في قاعدة البيانات",
+      online: "متصل",
+      offline: "غير متصل",
+    },
+    actions: {
+      seed: "بيانات تجريبية",
+      newProgram: "برنامج جديد",
+      addProgram: "إضافة برنامج",
+      calculate: "احسب",
+      addFertilizer: "إضافة سماد",
+      save: "حفظ",
+      delete: "حذف",
+      close: "إغلاق",
+      edit: "تعديل",
+      duplicate: "نسخ",
+      template: "قالب",
+      use: "استخدام",
+      view: "عرض",
+      export: "تصدير",
+      exportJson: "تصدير JSON",
+      clear: "مسح",
+      printReport: "طباعة التقرير",
+    },
+    titles: {
+      dailyConsumption: "الاستهلاك اليومي",
+      programs: "البرامج",
+      templates: "القوالب",
+      history: "السجل",
+      historyDetails: "تفاصيل السجل",
+      newProgram: "برنامج جديد",
+      editProgram: "تعديل البرنامج {code}",
+      duplicateProgram: "نسخ {code}",
+      templateFrom: "جديد من القالب: {name}",
+    },
+    labels: {
+      programsUsed: "البرامج المستخدمة",
+      totalItems: "إجمالي العناصر",
+      fertilizer: "السماد",
+      total: "الإجمالي",
+      unit: "الوحدة",
+      programCode: "رمز البرنامج",
+      notesOptional: "ملاحظات (اختياري)",
+      fertilizers: "الأسمدة",
+      searchPrograms: "بحث عن البرامج",
+      name: "الاسم",
+      updated: "آخر تحديث",
+      actions: "الإجراءات",
+      when: "الوقت",
+      programs: "البرامج",
+      items: "العناصر",
+      templates: "القوالب",
+      history: "السجل",
+      lastCalculation: "آخر عملية حساب",
+      times: "مرات",
+      remove: "إزالة",
+      language: "اللغة",
+      value: "القيمة",
+    },
+    help: {
+      dailyConsumption:
+        "أضف رموز البرامج وعدد المرات. مثال: N02 × 3، N03 × 1.",
+      programs: "أنشئ وعدل واحذف وصفات الأسمدة المحفوظة محليًا.",
+      templates: "احفظ البرامج كقوالب واستخدمها لإنشاء برامج جديدة.",
+      history: "حسابات حديثة مع طابع زمني.",
+      uniqueCode: "رمز فريد. مثال: N01، N02.",
+    },
+    placeholders: {
+      searchProgram: "ابحث عن رمز البرنامج",
+      programCode: "N02",
+      programNotes: "مثال: خلطة الشتاء",
+      fertilizerName: "نترات الكالسيوم",
+      fertilizerValue: "0.35",
+      times: "1",
+    },
+    table: {
+      noResults: "لا توجد نتائج بعد.",
+      loadingPrograms: "جاري تحميل البرامج...",
+      noPrograms: 'لا توجد برامج بعد. اضغط "برنامج جديد".',
+      noTemplates: "لا توجد قوالب بعد.",
+      noHistory: "لا يوجد سجل بعد.",
+    },
+    report: {
+      lastCalculation: "آخر عملية حساب",
+    },
+    messages: {
+      missingPrograms: "برامج مفقودة: {codes}.",
+      missingShort: " (مفقودة: {codes})",
+      addProgramRow: "أضف برنامجًا واحدًا على الأقل للحساب.",
+      programsLoadFailed: "تعذر تحميل البرامج.",
+      dbUnavailable: "قاعدة البيانات غير متاحة.",
+      dbUnavailableSave: "قاعدة البيانات غير متاحة. لا يمكن الحفظ.",
+      dbUnavailableSeed: "قاعدة البيانات غير متاحة. لا يمكن إنشاء بيانات تجريبية.",
+      programExists: "رمز البرنامج موجود بالفعل.",
+      saveFailed: "فشل الحفظ.",
+      deleteFailed: "فشل الحذف.",
+      loadFailed: "فشل التحميل.",
+      seedFailed: "فشل إنشاء البيانات التجريبية.",
+      seedConfirm: "هل تريد إنشاء بيانات تجريبية؟ سيتم استبدال N02/N03.",
+      deleteProgramConfirm: "حذف البرنامج {code}؟",
+      templateNamePrompt: "اسم القالب",
+      templateDeleteConfirm: "حذف هذا القالب؟",
+      templateSaveFailed: "فشل حفظ القالب.",
+      templateDeleteFailed: "فشل حذف القالب.",
+      historyDeleteConfirm: "حذف سجل هذه العملية؟",
+      historyClearConfirm: "مسح كل سجلات التاريخ؟",
+      historyDeleteFailed: "فشل حذف السجل.",
+      historyClearFailed: "فشل مسح السجل.",
+      historySaveFailed: "تعذر حفظ السجل.",
+      viewingHistory: "عرض السجل بتاريخ {date}.",
+      noHistoryExport: "لا يوجد سجل للتصدير.",
+      historyExportName: "fertilizer-history-ar.json",
+    },
+    validation: {
+      programCodeRequired: "رمز البرنامج مطلوب.",
+      programCodeInvalid:
+        "رمز البرنامج يجب أن يحتوي على أحرف أو أرقام أو شرطة أو underscore.",
+      fertilizerRequired: "أضف سمادًا واحدًا على الأقل.",
+      rowProgramRequired: "السطر {index}: رمز البرنامج مطلوب.",
+      rowTimesInvalid: "السطر {index}: عدد المرات يجب أن يكون رقمًا موجبًا.",
+      rowFertilizerNameRequired: "السطر {index}: اسم السماد مطلوب.",
+      rowFertilizerValueInvalid: "السطر {index}: القيمة يجب أن تكون أكبر من 0.",
+      rowFertilizerUnitInvalid: "السطر {index}: الوحدة يجب أن تكون kg أو L.",
+      duplicateFertilizers: "أسماء أسمدة مكررة: {names}.",
+    },
+    calc: {
+      skippedUnnamed: "تم تجاهل سماد بدون اسم في البرنامج {code}.",
+      skippedUnit: "تم تجاهل {name} في {code}: الوحدة يجب أن تكون kg أو L.",
+      skippedValue: "تم تجاهل {name} في {code}: القيمة يجب أن تكون أكبر من 0.",
+      unitMismatchProgram:
+        "عدم تطابق الوحدات داخل البرنامج {code} للعنصر {name}: {unitA} مقابل {unitB}.",
+      duplicateCombined:
+        "اسم السماد {name} مكرر في {code}؛ تم جمع القيم.",
+      unitMismatchTotals:
+        "عدم تطابق الوحدات للعنصر {name}: {unitA} مقابل {unitB}.",
+    },
+  },
 };
 
 function resolveValue(lang, key) {
@@ -323,6 +476,7 @@ try {
 }
 
 document.documentElement.lang = currentLanguage;
+document.documentElement.dir = RTL_LANGS.has(currentLanguage) ? "rtl" : "ltr";
 
 export function getLanguage() {
   return currentLanguage;
@@ -332,6 +486,7 @@ export function setLanguage(lang) {
   const next = SUPPORTED_LANGS.includes(lang) ? lang : "en";
   currentLanguage = next;
   document.documentElement.lang = next;
+  document.documentElement.dir = RTL_LANGS.has(next) ? "rtl" : "ltr";
   try {
     window.localStorage.setItem(STORAGE_KEY, next);
   } catch (error) {
