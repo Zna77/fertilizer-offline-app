@@ -364,6 +364,72 @@
       </div>
     </div>
 
+    <div
+      id="historySheetBackdrop"
+      class="sheet-backdrop"
+      aria-hidden="true"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="historySheetTitle"
+    >
+      <div class="sheet">
+        <div class="sheet-head row between">
+          <h3 id="historySheetTitle" data-i18n="titles.historyDetails">
+            History details
+          </h3>
+          <button
+            id="historySheetCloseBtn"
+            class="icon-btn"
+            type="button"
+            title="Close"
+            data-i18n="actions.close"
+            data-i18n-title="actions.close"
+          >
+            Close
+          </button>
+        </div>
+
+        <div class="sheet-body">
+          <div class="summary">
+            <div class="summary-item">
+              <div class="muted" data-i18n="labels.programsUsed">Programs used</div>
+              <div id="sheetSummaryPrograms" class="summary-value">-</div>
+            </div>
+            <div class="summary-item">
+              <div class="muted" data-i18n="labels.totalItems">Total items</div>
+              <div id="sheetSummaryCount" class="summary-value">-</div>
+            </div>
+          </div>
+
+          <div class="report-meta muted">
+            <span data-i18n="report.lastCalculation">Last calculation</span>:
+            <span id="sheetTimestamp">-</span>
+          </div>
+
+          <div id="sheetMessage" class="notice" role="status" aria-live="polite"></div>
+
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th data-i18n="labels.fertilizer">Fertilizer</th>
+                  <th class="right" data-i18n="labels.total">Total</th>
+                  <th data-i18n="labels.unit">Unit</th>
+                </tr>
+              </thead>
+              <tbody id="sheetSummaryBody">
+                <tr>
+                  <td colspan="3" class="muted" data-i18n="table.noResults">
+                    No results yet.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="app.js"></script>
   </body>
 </html>

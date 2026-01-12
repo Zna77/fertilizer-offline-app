@@ -422,12 +422,11 @@ async function handleHistoryAction(event) {
       }),
       "info"
     );
-    const panel = document.getElementById("summaryPanel");
-    if (panel) {
-      panel.classList.remove("flash");
-      void panel.offsetWidth;
-      panel.classList.add("flash");
-      panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    const useSheet = window.matchMedia("(max-width: 960px)").matches;
+    if (useSheet) {
+      UI.renderHistorySheet(summary);
+    } else {
+      focusSummaryPanel();
     }
     return;
   }
@@ -464,6 +463,21 @@ function exportJson(payload, filename) {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function focusSummaryPanel() {
+  const panel = document.getElementById("summaryPanel");
+  if (!panel) return;
+  panel.classList.remove("flash");
+  void panel.offsetWidth;
+  panel.classList.add("flash");
+
+  const top = panel.getBoundingClientRect().top + window.scrollY - 16;
+  window.scrollTo({ top, behavior: "smooth" });
+
+  window.requestAnimationFrame(() => {
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 }
 
 function getModalTitle(context) {
@@ -529,6 +543,10 @@ function updateLanguage(nextLang) {
         allowCodeEdit: context.allowCodeEdit,
       },
     });
+  }
+
+  if (UI.isHistorySheetOpen() && state.lastSummary) {
+    UI.updateHistorySheet(state.lastSummary);
   }
 }
 

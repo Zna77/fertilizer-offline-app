@@ -42,6 +42,14 @@ export const els = {
   clearHistoryBtn: $("clearHistoryBtn"),
   printReportBtn: $("printReportBtn"),
   reportTimestamp: $("reportTimestamp"),
+
+  historySheetBackdrop: $("historySheetBackdrop"),
+  historySheetCloseBtn: $("historySheetCloseBtn"),
+  sheetSummaryBody: $("sheetSummaryBody"),
+  sheetSummaryPrograms: $("sheetSummaryPrograms"),
+  sheetSummaryCount: $("sheetSummaryCount"),
+  sheetMessage: $("sheetMessage"),
+  sheetTimestamp: $("sheetTimestamp"),
 };
 
 const dateFormatOptions = {
@@ -185,26 +193,26 @@ export function rebuildConsumptionRows(rows) {
   rows.forEach((row) => makeConsumptionRow(row));
 }
 
-export function renderSummary({ totals, used, missing, warnings, errors, timestamp }) {
+function applySummaryView(view, { totals, used, missing, warnings, errors, timestamp }) {
+  if (!view?.summaryPrograms || !view?.summaryBody || !view?.summaryCount) return;
+
   const usedText = used.length
     ? used.map((item) => `${item.code}x${item.times}`).join(", ")
     : "-";
 
-  els.summaryPrograms.textContent = usedText;
-  els.summaryCount.textContent = totals.length ? String(totals.length) : "-";
-  if (els.reportTimestamp) {
-    els.reportTimestamp.textContent = timestamp
-      ? formatDate(timestamp)
-      : "-";
+  view.summaryPrograms.textContent = usedText;
+  view.summaryCount.textContent = totals.length ? String(totals.length) : "-";
+  if (view.timestampEl) {
+    view.timestampEl.textContent = timestamp ? formatDate(timestamp) : "-";
   }
 
   if (!totals.length) {
-    els.summaryBody.removeAttribute("data-state");
-    els.summaryBody.innerHTML = `<tr><td colspan="3" class="muted">${t(
+    view.summaryBody.removeAttribute("data-state");
+    view.summaryBody.innerHTML = `<tr><td colspan="3" class="muted">${t(
       "table.noResults"
     )}</td></tr>`;
   } else {
-    els.summaryBody.dataset.state = "ready";
+    view.summaryBody.dataset.state = "ready";
     const rows = totals
       .sort((a, b) => a.name.localeCompare(b.name))
       .map(
@@ -216,7 +224,7 @@ export function renderSummary({ totals, used, missing, warnings, errors, timesta
         </tr>`
       )
       .join("");
-    els.summaryBody.innerHTML = rows;
+    view.summaryBody.innerHTML = rows;
   }
 
   const messages = [];
@@ -230,8 +238,44 @@ export function renderSummary({ totals, used, missing, warnings, errors, timesta
     messages.push(errors.join(" "));
   }
 
-  const tone = errors.length ? "error" : warnings.length ? "warn" : "info";
-  setNotice(els.calcMessage, messages.join(" "), tone);
+  if (view.messageEl) {
+    const tone = errors.length ? "error" : warnings.length ? "warn" : "info";
+    setNotice(view.messageEl, messages.join(" "), tone);
+  }
+}
+
+export function renderSummary(summary) {
+  const summaryView = {
+    summaryPrograms: els.summaryPrograms,
+    summaryCount: els.summaryCount,
+    summaryBody: els.summaryBody,
+    messageEl: els.calcMessage,
+    timestampEl: els.reportTimestamp,
+  };
+  applySummaryView(summaryView, summary);
+}
+
+export function renderHistorySheet(summary) {
+  const sheetView = {
+    summaryPrograms: els.sheetSummaryPrograms,
+    summaryCount: els.sheetSummaryCount,
+    summaryBody: els.sheetSummaryBody,
+    messageEl: els.sheetMessage,
+    timestampEl: els.sheetTimestamp,
+  };
+  applySummaryView(sheetView, summary);
+  openHistorySheet();
+}
+
+export function updateHistorySheet(summary) {
+  const sheetView = {
+    summaryPrograms: els.sheetSummaryPrograms,
+    summaryCount: els.sheetSummaryCount,
+    summaryBody: els.sheetSummaryBody,
+    messageEl: els.sheetMessage,
+    timestampEl: els.sheetTimestamp,
+  };
+  applySummaryView(sheetView, summary);
 }
 
 export function renderTemplatesTable(templates) {
@@ -346,6 +390,24 @@ export function closeModal() {
   els.modalBackdrop.classList.add("hidden");
 }
 
+export function openHistorySheet() {
+  if (!els.historySheetBackdrop) return;
+  els.historySheetBackdrop.classList.add("open");
+  els.historySheetBackdrop.setAttribute("aria-hidden", "false");
+  document.body.classList.add("sheet-open");
+}
+
+export function closeHistorySheet() {
+  if (!els.historySheetBackdrop) return;
+  els.historySheetBackdrop.classList.remove("open");
+  els.historySheetBackdrop.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("sheet-open");
+}
+
+export function isHistorySheetOpen() {
+  return !!els.historySheetBackdrop?.classList.contains("open");
+}
+
 export function addFertilizerRow(data = {}) {
   const rowId = makeId();
   const name = data.name ?? "";
@@ -447,5 +509,14 @@ export function initUI(handlers) {
   }
   if (els.printReportBtn) {
     els.printReportBtn.addEventListener("click", handlers.onPrintReport);
+  }
+
+  if (els.historySheetCloseBtn) {
+    els.historySheetCloseBtn.addEventListener("click", closeHistorySheet);
+  }
+  if (els.historySheetBackdrop) {
+    els.historySheetBackdrop.addEventListener("click", (event) => {
+      if (event.target === els.historySheetBackdrop) closeHistorySheet();
+    });
   }
 }
