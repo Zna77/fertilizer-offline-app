@@ -1,5 +1,6 @@
 import { formatNumber } from "./models.js";
 import { getLanguage, t } from "./i18n.js";
+import { animateIn, animateList, animateOut, animatePulse } from "./motion.js";
 
 const $ = (id) => document.getElementById(id);
 const makeId = () =>
@@ -50,6 +51,10 @@ export const els = {
   sheetSummaryCount: $("sheetSummaryCount"),
   sheetMessage: $("sheetMessage"),
   sheetTimestamp: $("sheetTimestamp"),
+
+  offlineBanner: $("offlineBanner"),
+  updateBanner: $("updateBanner"),
+  reloadAppBtn: $("reloadAppBtn"),
 };
 
 const dateFormatOptions = {
@@ -62,6 +67,15 @@ function formatDate(value) {
   return formatter.format(new Date(value));
 }
 
+function removeRowWithAnimation(row) {
+  const animation = animateOut(row);
+  if (animation && typeof animation.then === "function") {
+    animation.then(() => row.remove());
+    return;
+  }
+  row.remove();
+}
+
 export function setNotice(el, text, tone = "info") {
   el.textContent = text || "";
   el.dataset.tone = tone;
@@ -71,6 +85,7 @@ export function setDbStatus(text, tone = "info") {
   if (!els.dbStatus) return;
   els.dbStatus.textContent = text;
   els.dbStatus.dataset.tone = tone;
+  animatePulse(els.dbStatus);
 }
 
 export function setNetworkStatus(isOnline) {
@@ -79,6 +94,15 @@ export function setNetworkStatus(isOnline) {
     ? t("status.online")
     : t("status.offline");
   els.netStatus.dataset.tone = isOnline ? "info" : "warn";
+  animatePulse(els.netStatus);
+  if (els.offlineBanner) {
+    els.offlineBanner.classList.toggle("hidden", isOnline);
+  }
+}
+
+export function showUpdateBanner(show = true) {
+  if (!els.updateBanner) return;
+  els.updateBanner.classList.toggle("hidden", !show);
 }
 
 export function renderProgramsState({ loading, error, programs, query }) {
@@ -138,6 +162,7 @@ export function renderProgramsTable(programs, query) {
       </tr>`;
     })
     .join("");
+  animateList(els.programsBody);
 }
 
 export function makeConsumptionRow({ code = "", times = 1 } = {}) {
@@ -174,10 +199,11 @@ export function makeConsumptionRow({ code = "", times = 1 } = {}) {
   row.addEventListener("click", (event) => {
     const btn = event.target.closest("[data-role='remove']");
     if (!btn) return;
-    row.remove();
+    removeRowWithAnimation(row);
   });
 
   els.consumptionRows.appendChild(row);
+  animateIn(row);
 }
 
 export function getConsumptionInputRows() {
@@ -226,6 +252,7 @@ function applySummaryView(view, { totals, used, missing, warnings, errors, times
       .join("");
     view.summaryBody.innerHTML = rows;
   }
+  animateList(view.summaryBody);
 
   const messages = [];
   if (missing.length) {
@@ -309,6 +336,7 @@ export function renderTemplatesTable(templates) {
       </tr>`;
     })
     .join("");
+  animateList(els.templatesBody);
 }
 
 export function renderHistoryTable(entries) {
@@ -353,6 +381,7 @@ export function renderHistoryTable(entries) {
       </tr>`;
     })
     .join("");
+  animateList(els.historyBody);
 }
 
 export function openModal({ title, program }) {
@@ -453,10 +482,11 @@ export function addFertilizerRow(data = {}) {
   row.addEventListener("click", (event) => {
     const btn = event.target.closest("[data-role='remove']");
     if (!btn) return;
-    row.remove();
+    removeRowWithAnimation(row);
   });
 
   els.fertRows.appendChild(row);
+  animateIn(row);
 }
 
 export function getProgramFormInput() {
@@ -518,5 +548,9 @@ export function initUI(handlers) {
     els.historySheetBackdrop.addEventListener("click", (event) => {
       if (event.target === els.historySheetBackdrop) closeHistorySheet();
     });
+  }
+
+  if (els.reloadAppBtn && handlers.onReloadApp) {
+    els.reloadAppBtn.addEventListener("click", handlers.onReloadApp);
   }
 }

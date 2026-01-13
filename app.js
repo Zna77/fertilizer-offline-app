@@ -1,1 +1,3 @@
-import "./src/app.js";
+import { initApp } from "./src/app.js";
+
+initApp();

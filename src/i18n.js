@@ -39,6 +39,7 @@ const translations = {
       exportJson: "Export JSON",
       clear: "Clear",
       printReport: "Print report",
+      reload: "Refresh",
     },
     titles: {
       dailyConsumption: "Daily Consumption",
@@ -128,6 +129,8 @@ const translations = {
       viewingHistory: "Showing history from {date}.",
       noHistoryExport: "No history to export.",
       historyExportName: "fertilizer-history.json",
+      offlineBanner: "You are offline. Some actions may be unavailable.",
+      updateAvailable: "Update available. Refresh to apply the latest version.",
     },
     validation: {
       programCodeRequired: "Program code is required.",
@@ -189,6 +192,7 @@ const translations = {
       exportJson: "Exporter JSON",
       clear: "Effacer",
       printReport: "Imprimer rapport",
+      reload: "Actualiser",
     },
     titles: {
       dailyConsumption: "Consommation quotidienne",
@@ -278,6 +282,10 @@ const translations = {
       viewingHistory: "Historique affiche du {date}.",
       noHistoryExport: "Aucun historique a exporter.",
       historyExportName: "historique-engrais.json",
+      offlineBanner:
+        "Vous etes hors ligne. Certaines actions peuvent etre indisponibles.",
+      updateAvailable:
+        "Mise a jour disponible. Actualisez pour appliquer la derniere version.",
     },
     validation: {
       programCodeRequired: "Code programme requis.",
@@ -339,6 +347,7 @@ const translations = {
       exportJson: "تصدير JSON",
       clear: "مسح",
       printReport: "طباعة التقرير",
+      reload: "تحديث",
     },
     titles: {
       dailyConsumption: "الاستهلاك اليومي",
@@ -428,6 +437,8 @@ const translations = {
       viewingHistory: "عرض السجل بتاريخ {date}.",
       noHistoryExport: "لا يوجد سجل للتصدير.",
       historyExportName: "fertilizer-history-ar.json",
+      offlineBanner: "أنت غير متصل. قد لا تتوفر بعض الإجراءات.",
+      updateAvailable: "تحديث متاح. أعد التحميل لتطبيق آخر إصدار.",
     },
     validation: {
       programCodeRequired: "رمز البرنامج مطلوب.",

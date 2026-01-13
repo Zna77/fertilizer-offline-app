@@ -31,6 +31,9 @@ const makeId = () =>
     ? crypto.randomUUID()
     : `id-${Math.random().toString(36).slice(2)}`;
 
+let appInitialized = false;
+let swRegistration = null;
+
 const SEED_PROGRAMS = [
   {
     code: "N02",
@@ -582,6 +585,14 @@ function handleLanguageChange() {
   updateLanguage(UI.els.languageSelect.value);
 }
 
+function handleReloadApp() {
+  if (swRegistration?.waiting) {
+    swRegistration.waiting.postMessage({ type: "SKIP_WAITING" });
+    return;
+  }
+  window.location.reload();
+}
+
 function wireEvents() {
   UI.initUI({
     onAddConsumptionRow: handleAddConsumptionRow,
@@ -598,6 +609,41 @@ function wireEvents() {
     onClearHistory: handleClearHistory,
     onPrintReport: handlePrintReport,
     onLanguageChange: handleLanguageChange,
+    onReloadApp: handleReloadApp,
+  });
+}
+
+function setupServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+
+  navigator.serviceWorker
+    .register("/sw.js", { updateViaCache: "none" })
+    .then((registration) => {
+      swRegistration = registration;
+
+      if (registration.waiting) {
+        UI.showUpdateBanner(true);
+      }
+
+      registration.addEventListener("updatefound", () => {
+        const nextWorker = registration.installing;
+        if (!nextWorker) return;
+        nextWorker.addEventListener("statechange", () => {
+          if (
+            nextWorker.state === "installed" &&
+            navigator.serviceWorker.controller
+          ) {
+            UI.showUpdateBanner(true);
+          }
+        });
+      });
+    })
+    .catch(() => {
+      /* ignore registration errors */
+    });
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    window.location.reload();
   });
 }
 
@@ -641,9 +687,11 @@ async function init() {
   UI.makeConsumptionRow({ code: "N02", times: 1 });
   UI.makeConsumptionRow({ code: "N03", times: 1 });
 
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" });
-  }
+  setupServiceWorker();
 }
 
-init();
+export function initApp() {
+  if (appInitialized) return;
+  appInitialized = true;
+  init();
+}
