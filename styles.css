@@ -14,6 +14,11 @@
   --radius: 18px;
   --font-body: "Optima", "Candara", "Trebuchet MS", sans-serif;
   --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Georgia", serif;
+  --ease-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 140ms;
+  --duration-med: 240ms;
+  --duration-slow: 520ms;
 }
 
 * {
@@ -23,6 +28,10 @@
 html,
 body {
   height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -55,6 +64,18 @@ h3 {
   margin: 0;
 }
 
+h1 {
+  font-size: clamp(1.6rem, 2.2vw + 1rem, 2.4rem);
+}
+
+h2 {
+  font-size: clamp(1.2rem, 1.4vw + 0.9rem, 1.7rem);
+}
+
+h3 {
+  font-size: clamp(1.05rem, 1.1vw + 0.85rem, 1.4rem);
+}
+
 p {
   margin: 6px 0 0;
 }
@@ -66,6 +87,7 @@ p {
 .app-shell {
   position: relative;
   z-index: 1;
+  animation: appIn var(--duration-slow) var(--ease-smooth) both;
 }
 
 .container {
@@ -86,6 +108,9 @@ p {
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(10px);
   z-index: 2;
+  animation: topbarIn var(--duration-slow) var(--ease-out) both;
+  transition: box-shadow var(--duration-med) var(--ease-smooth),
+    background-color var(--duration-med) var(--ease-smooth);
 }
 
 .brand {
@@ -130,6 +155,9 @@ p {
   background: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  transition: background-color var(--duration-med) var(--ease-smooth),
+    border-color var(--duration-med) var(--ease-smooth),
+    color var(--duration-med) var(--ease-smooth);
 }
 
 .status-chip[data-tone="success"] {
@@ -178,7 +206,32 @@ p {
   box-shadow: var(--shadow);
   padding: 18px;
   margin-top: 22px;
-  animation: rise 0.6s ease both;
+  animation: rise var(--duration-slow) var(--ease-smooth) both;
+  transition: transform var(--duration-med) var(--ease-smooth),
+    box-shadow var(--duration-med) var(--ease-smooth);
+}
+
+.container > .panel:nth-of-type(1) {
+  animation-delay: 40ms;
+}
+
+.container > .panel:nth-of-type(2) {
+  animation-delay: 90ms;
+}
+
+.container > .panel:nth-of-type(3) {
+  animation-delay: 140ms;
+}
+
+.container > .panel:nth-of-type(4) {
+  animation-delay: 190ms;
+}
+
+@media (hover: hover) {
+  .panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 26px 60px rgba(33, 24, 10, 0.2);
+  }
 }
 
 #summaryPanel {
@@ -277,7 +330,9 @@ p {
   background: #fffdf7;
   color: var(--text);
   font-size: 0.95rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color var(--duration-fast) var(--ease-smooth),
+    box-shadow var(--duration-fast) var(--ease-smooth),
+    background-color var(--duration-fast) var(--ease-smooth);
 }
 
 .input:focus-visible,
@@ -287,6 +342,7 @@ p {
   outline: 3px solid rgba(47, 111, 78, 0.2);
   outline-offset: 2px;
   border-color: rgba(47, 111, 78, 0.5);
+  box-shadow: 0 0 0 4px rgba(47, 111, 78, 0.08);
 }
 
 .btn {
@@ -295,13 +351,20 @@ p {
   border: 1px solid transparent;
   cursor: pointer;
   font-weight: 600;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    filter var(--duration-fast) var(--ease-out);
   font-size: 0.95rem;
 }
 
 .btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 20px rgba(33, 24, 10, 0.15);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: none;
 }
 
 .btn-primary {
@@ -327,6 +390,13 @@ p {
   background: rgba(255, 255, 255, 0.8);
   cursor: pointer;
   font-size: 0.85rem;
+  transition: transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.icon-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(33, 24, 10, 0.12);
 }
 
 .notice {
@@ -393,6 +463,15 @@ p {
   border-radius: 16px;
   background: rgba(47, 111, 78, 0.08);
   border: 1px solid rgba(47, 111, 78, 0.15);
+  transition: transform var(--duration-med) var(--ease-smooth),
+    box-shadow var(--duration-med) var(--ease-smooth);
+}
+
+@media (hover: hover) {
+  .summary-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 22px rgba(33, 24, 10, 0.12);
+  }
 }
 
 .summary-value {
@@ -420,6 +499,10 @@ p {
   padding: 18px;
   z-index: 10;
   overflow-y: auto;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--duration-med) var(--ease-smooth),
+    visibility 0s linear;
 }
 
 .modal {
@@ -427,10 +510,24 @@ p {
   max-height: calc(100vh - 48px);
   background: var(--panel);
   border-radius: 20px;
-  padding: 18px;
+  padding: clamp(14px, 2.5vw, 18px);
   box-shadow: var(--shadow);
-  animation: fadeIn 0.2s ease both;
+  transform: translateY(0) scale(1);
+  transition: transform var(--duration-med) var(--ease-out);
   overflow: auto;
+}
+
+.modal-backdrop.hidden {
+  display: grid;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--duration-med) var(--ease-smooth),
+    visibility 0s linear var(--duration-med);
+}
+
+.modal-backdrop.hidden .modal {
+  transform: translateY(12px) scale(0.98);
 }
 
 .sheet-backdrop {
@@ -454,11 +551,11 @@ p {
   width: 100%;
   background: var(--panel);
   border-radius: 20px 20px 0 0;
-  padding: 18px;
+  padding: clamp(14px, 2.5vw, 18px);
   max-height: min(80vh, 680px);
   overflow: auto;
   transform: translateY(100%);
-  transition: transform 0.25s ease;
+  transition: transform var(--duration-med) var(--ease-out);
   box-shadow: var(--shadow);
 }
 
@@ -522,6 +619,28 @@ p {
   from {
     opacity: 0;
     transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes appIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes topbarIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
@@ -596,6 +715,39 @@ p {
   }
 }
 
+@media (max-width: 720px) {
+  .topbar {
+    padding: 18px 16px;
+  }
+
+  .status {
+    justify-content: flex-start;
+  }
+
+  .topbar-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar-actions .btn,
+  .topbar-actions .select {
+    width: 100%;
+  }
+
+  .container {
+    padding: 16px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 12px;
+  }
+}
+
 @media (max-width: 640px) {
   .grid-2 {
     grid-template-columns: 1fr;
@@ -607,6 +759,10 @@ p {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   * {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
