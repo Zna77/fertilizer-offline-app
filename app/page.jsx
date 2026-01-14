@@ -275,7 +275,7 @@ export default function Page() {
             </div>
           </div>
 
-          <div className="table-wrap">
+          <div className="table-wrap history-table">
             <table className="table">
               <thead>
                 <tr>

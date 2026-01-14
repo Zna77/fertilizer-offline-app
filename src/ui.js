@@ -8,6 +8,8 @@ const makeId = () =>
     ? crypto.randomUUID()
     : `id-${Math.random().toString(36).slice(2)}`;
 
+let historySheetReturnFocus = null;
+
 export const els = {
   consumptionRows: $("consumptionRows"),
   addConsumptionRowBtn: $("addConsumptionRowBtn"),
@@ -347,6 +349,11 @@ export function renderHistoryTable(entries) {
     return;
   }
 
+  const whenLabel = t("labels.when");
+  const programsLabel = t("labels.programs");
+  const itemsLabel = t("labels.items");
+  const actionsLabel = t("labels.actions");
+
   els.historyBody.innerHTML = entries
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .map((entry) => {
@@ -362,10 +369,10 @@ export function renderHistoryTable(entries) {
       const count = entry.totals?.length ? entry.totals.length : 0;
       return `
       <tr>
-        <td>${when}</td>
-        <td>${used}${missing}</td>
-        <td class="right">${count}</td>
-        <td class="right">
+        <td data-label="${whenLabel}">${when}</td>
+        <td data-label="${programsLabel}">${used}${missing}</td>
+        <td class="right" data-label="${itemsLabel}">${count}</td>
+        <td class="right" data-label="${actionsLabel}">
           <div class="row actions">
             <button class="btn btn-secondary" data-action="view" data-id="${entry.id}">${t(
               "actions.view"
@@ -421,15 +428,33 @@ export function closeModal() {
 
 export function openHistorySheet() {
   if (!els.historySheetBackdrop) return;
+  historySheetReturnFocus =
+    document.activeElement instanceof HTMLElement ? document.activeElement : null;
   els.historySheetBackdrop.classList.add("open");
   els.historySheetBackdrop.setAttribute("aria-hidden", "false");
+  els.historySheetBackdrop.removeAttribute("inert");
   document.body.classList.add("sheet-open");
+  if (els.historySheetCloseBtn) {
+    requestAnimationFrame(() => {
+      els.historySheetCloseBtn?.focus();
+    });
+  }
 }
 
 export function closeHistorySheet() {
   if (!els.historySheetBackdrop) return;
+  const restoreTarget = historySheetReturnFocus;
+  if (restoreTarget && restoreTarget.isConnected) {
+    restoreTarget.focus();
+  } else if (els.newProgramBtn) {
+    els.newProgramBtn.focus();
+  } else {
+    els.historySheetCloseBtn?.blur();
+  }
+  historySheetReturnFocus = null;
   els.historySheetBackdrop.classList.remove("open");
   els.historySheetBackdrop.setAttribute("aria-hidden", "true");
+  els.historySheetBackdrop.setAttribute("inert", "");
   document.body.classList.remove("sheet-open");
 }
 

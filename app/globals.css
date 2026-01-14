@@ -374,10 +374,18 @@
 @media print {
   body {
     background: #fff;
+    color: #000;
+    font-size: 12pt;
+    line-height: 1.35;
   }
 
   body::before {
     display: none;
+  }
+
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 
   .topbar,
@@ -401,8 +409,69 @@
     width: 100%;
   }
 
+  h1 {
+    font-size: 18pt;
+  }
+
+  h2 {
+    font-size: 14pt;
+  }
+
+  h3 {
+    font-size: 12pt;
+  }
+
+  .summary {
+    gap: 0.5rem;
+  }
+
+  .summary-item {
+    border: 1px solid #000;
+    box-shadow: none;
+    background: #fff;
+  }
+
+  .summary-value {
+    font-size: 12pt;
+  }
+
+  .report-meta,
+  .muted,
+  .notice,
+  .help {
+    color: #000;
+  }
+
   .table-wrap {
-    border-color: #ccc;
+    border: 1px solid #222;
+    overflow: visible;
+    border-radius: 0;
+    background: #fff;
+  }
+
+  .table {
+    font-size: 11pt;
+    border-collapse: collapse;
+  }
+
+  .table th,
+  .table td {
+    border-bottom: 1px solid #333;
+    padding: 0.4rem 0.55rem;
+  }
+
+  .table th {
+    color: #000;
+    letter-spacing: 0.08em;
+    background: #f2f2f2;
+  }
+
+  .table tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .table tbody tr:nth-child(even) td {
+    background: #fafafa;
   }
 }
 
@@ -427,5 +496,47 @@
     height: 100vh;
     max-height: 100vh;
     border-radius: 0;
+  }
+
+  .history-table {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .history-table .table {
+    border-collapse: separate;
+    border-spacing: 0 0.75rem;
+  }
+
+  .history-table thead {
+    display: none;
+  }
+
+  .history-table tbody tr {
+    @apply grid gap-3 rounded-2xl border border-border/10 bg-surface/90 px-4 py-3 shadow-soft;
+  }
+
+  .history-table tbody td {
+    @apply border-b-0 p-0 text-left;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .history-table tbody td.right {
+    text-align: left;
+  }
+
+  .history-table tbody td::before {
+    content: attr(data-label);
+    @apply text-[0.7rem] uppercase tracking-[0.18em] text-muted;
+  }
+
+  .history-table .actions {
+    @apply grid grid-cols-2 gap-2;
+  }
+
+  .history-table .actions .btn {
+    width: 100%;
   }
 }
