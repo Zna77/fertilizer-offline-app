@@ -24,15 +24,11 @@ import {
 } from "./models.js";
 import { aggregateConsumption } from "./calc.js";
 import * as UI from "./ui.js";
-import { applyTranslations, getLanguage, setLanguage, t } from "./i18n.js";
 
 const makeId = () =>
   typeof crypto !== "undefined" && crypto.randomUUID
     ? crypto.randomUUID()
     : `id-${Math.random().toString(36).slice(2)}`;
-
-let appInitialized = false;
-let swRegistration = null;
 
 const SEED_PROGRAMS = [
   {
@@ -94,7 +90,7 @@ async function refreshPrograms() {
       query: normalizeCode(UI.els.searchInput.value),
     });
   } catch (error) {
-    const message = error.message || t("messages.programsLoadFailed");
+    const message = error.message || "Unable to load programs.";
     setState({ loading: false, dbError: message });
     UI.renderProgramsState({
       loading: false,
@@ -129,20 +125,17 @@ async function handleCalculate() {
   const rawRows = UI.getConsumptionInputRows();
   const { normalized, warnings } = normalizeConsumptionRows(rawRows);
   if (!normalized.length) {
-    warnings.push(t("messages.addProgramRow"));
+    warnings.push("Add at least one program row to calculate.");
   }
   const result = aggregateConsumption(normalized, state.programsByCode);
   result.warnings = [...warnings, ...result.warnings];
   const timestamp = normalized.length ? nowISO() : "";
-  const summary = { ...result, timestamp };
-  setState({ lastSummary: summary });
-  UI.renderSummary(summary);
+  UI.renderSummary({ ...result, timestamp });
 
   if (normalized.length) {
     const entry = {
       id: makeId(),
       createdAt: timestamp,
-      inputs: normalized,
       used: result.used,
       missing: result.missing,
       totals: result.totals,
@@ -155,7 +148,7 @@ async function handleCalculate() {
     } catch (error) {
       UI.setNotice(
         UI.els.calcMessage,
-        error.message || t("messages.historySaveFailed"),
+        error.message || "Unable to save history.",
         "warn"
       );
     }
@@ -173,15 +166,12 @@ async function handleProgramAction(event) {
     try {
       const program = await getProgram(code);
       if (!program) return;
-      setState({
-        editingCode: code,
-        modalContext: { type: "edit", code, allowCodeEdit: false },
-      });
-      UI.openModal({ title: t("titles.editProgram", { code }), program });
+      setState({ editingCode: code });
+      UI.openModal({ title: `Edit Program ${code}`, program });
     } catch (error) {
       UI.setNotice(
         UI.els.calcMessage,
-        error.message || t("messages.loadFailed"),
+        error.message || "Load failed.",
         "error"
       );
     }
@@ -196,18 +186,15 @@ async function handleProgramAction(event) {
       code: `${source.code}-COPY`,
       allowCodeEdit: true,
     };
-    setState({
-      editingCode: null,
-      modalContext: { type: "duplicate", code, allowCodeEdit: true },
-    });
-    UI.openModal({ title: t("titles.duplicateProgram", { code }), program: duplicate });
+    setState({ editingCode: null });
+    UI.openModal({ title: `Duplicate ${code}`, program: duplicate });
     return;
   }
 
   if (action === "template") {
     const source = state.programsByCode.get(code);
     if (!source) return;
-    const name = window.prompt(t("messages.templateNamePrompt"), source.code);
+    const name = window.prompt("Template name", source.code);
     if (!name) return;
     const template = {
       id: makeId(),
@@ -224,7 +211,7 @@ async function handleProgramAction(event) {
     } catch (error) {
       UI.setNotice(
         UI.els.calcMessage,
-        error.message || t("messages.templateSaveFailed"),
+        error.message || "Template save failed.",
         "error"
       );
     }
@@ -232,8 +219,8 @@ async function handleProgramAction(event) {
 }
 
 function handleNewProgram() {
-  setState({ editingCode: null, modalContext: { type: "new", allowCodeEdit: true } });
-  UI.openModal({ title: t("titles.newProgram") });
+  setState({ editingCode: null });
+  UI.openModal({ title: "New Program" });
 }
 
 async function handleSaveProgram(event) {
@@ -242,7 +229,7 @@ async function handleSaveProgram(event) {
   if (!state.dbReady) {
     UI.setNotice(
       UI.els.formMessage,
-      t("messages.dbUnavailableSave"),
+      "Database unavailable. Cannot save programs.",
       "error"
     );
     return;
@@ -252,7 +239,7 @@ async function handleSaveProgram(event) {
   const { program, errors } = buildProgram(rawInput);
 
   if (!state.editingCode && state.programsByCode.has(program.code)) {
-    errors.unshift(t("messages.programExists"));
+    errors.unshift("Program code already exists.");
   }
 
   if (errors.length) {
@@ -274,7 +261,7 @@ async function handleSaveProgram(event) {
   } catch (error) {
     UI.setNotice(
       UI.els.formMessage,
-      error.message || t("messages.saveFailed"),
+      error.message || "Save failed.",
       "error"
     );
   }
@@ -283,11 +270,7 @@ async function handleSaveProgram(event) {
 async function handleDeleteProgram() {
   if (!state.editingCode) return;
 
-  if (
-    !window.confirm(
-      t("messages.deleteProgramConfirm", { code: state.editingCode })
-    )
-  ) {
+  if (!window.confirm(`Delete program ${state.editingCode}?`)) {
     return;
   }
 
@@ -298,7 +281,7 @@ async function handleDeleteProgram() {
   } catch (error) {
     UI.setNotice(
       UI.els.formMessage,
-      error.message || t("messages.deleteFailed"),
+      error.message || "Delete failed.",
       "error"
     );
   }
@@ -308,13 +291,13 @@ async function handleSeed() {
   if (!state.dbReady) {
     UI.setNotice(
       UI.els.calcMessage,
-      t("messages.dbUnavailableSeed"),
+      "Database unavailable. Cannot seed data.",
       "error"
     );
     return;
   }
 
-  if (!window.confirm(t("messages.seedConfirm"))) {
+  if (!window.confirm("Seed sample programs? This will overwrite N02/N03.")) {
     return;
   }
 
@@ -336,11 +319,7 @@ async function handleSeed() {
 
     await refreshPrograms();
   } catch (error) {
-    UI.setNotice(
-      UI.els.calcMessage,
-      error.message || t("messages.seedFailed"),
-      "error"
-    );
+    UI.setNotice(UI.els.calcMessage, error.message || "Seed failed.", "error");
   }
 }
 
@@ -361,12 +340,9 @@ async function handleTemplateAction(event) {
   if (action === "use") {
     const template = state.templates.find((item) => item.id === id);
     if (!template) return;
-    setState({
-      editingCode: null,
-      modalContext: { type: "template", name: template.name, allowCodeEdit: true },
-    });
+    setState({ editingCode: null });
     UI.openModal({
-      title: t("titles.templateFrom", { name: template.name }),
+      title: `New from template: ${template.name}`,
       program: {
         code: "",
         notes: template.notes || "",
@@ -378,14 +354,14 @@ async function handleTemplateAction(event) {
   }
 
   if (action === "delete") {
-    if (!window.confirm(t("messages.templateDeleteConfirm"))) return;
+    if (!window.confirm("Delete this template?")) return;
     try {
       await deleteTemplate(id);
       await refreshTemplates();
     } catch (error) {
       UI.setNotice(
         UI.els.calcMessage,
-        error.message || t("messages.templateDeleteFailed"),
+        error.message || "Template delete failed.",
         "error"
       );
     }
@@ -402,35 +378,14 @@ async function handleHistoryAction(event) {
   if (!entry) return;
 
   if (action === "view") {
-    const summary = {
+    UI.renderSummary({
       totals: entry.totals || [],
       used: entry.used || [],
       missing: entry.missing || [],
       warnings: entry.warnings || [],
       errors: entry.errors || [],
       timestamp: entry.createdAt,
-    };
-    setState({ lastSummary: summary });
-    UI.renderSummary(summary);
-    const rows = entry.inputs?.length ? entry.inputs : entry.used || [];
-    if (rows.length) {
-      UI.rebuildConsumptionRows(
-        rows.map((item) => ({ code: item.code, times: item.times }))
-      );
-    }
-    UI.setNotice(
-      UI.els.calcMessage,
-      t("messages.viewingHistory", {
-        date: entry.createdAt ? new Date(entry.createdAt).toLocaleString() : "-",
-      }),
-      "info"
-    );
-    const useSheet = window.matchMedia("(max-width: 960px)").matches;
-    if (useSheet) {
-      UI.renderHistorySheet(summary);
-    } else {
-      focusSummaryPanel();
-    }
+    });
     return;
   }
 
@@ -440,14 +395,14 @@ async function handleHistoryAction(event) {
   }
 
   if (action === "delete") {
-    if (!window.confirm(t("messages.historyDeleteConfirm"))) return;
+    if (!window.confirm("Delete this history entry?")) return;
     try {
       await deleteHistoryEntry(id);
       await refreshHistory();
     } catch (error) {
       UI.setNotice(
         UI.els.calcMessage,
-        error.message || t("messages.historyDeleteFailed"),
+        error.message || "History delete failed.",
         "error"
       );
     }
@@ -468,109 +423,24 @@ function exportJson(payload, filename) {
   URL.revokeObjectURL(url);
 }
 
-function focusSummaryPanel() {
-  const panel = document.getElementById("summaryPanel");
-  if (!panel) return;
-  panel.classList.remove("flash");
-  void panel.offsetWidth;
-  panel.classList.add("flash");
-
-  const top = panel.getBoundingClientRect().top + window.scrollY - 16;
-  window.scrollTo({ top, behavior: "smooth" });
-
-  window.requestAnimationFrame(() => {
-    panel.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-}
-
-function getModalTitle(context) {
-  if (!context || !context.type) return t("titles.newProgram");
-  if (context.type === "edit") {
-    return t("titles.editProgram", { code: context.code });
-  }
-  if (context.type === "duplicate") {
-    return t("titles.duplicateProgram", { code: context.code });
-  }
-  if (context.type === "template") {
-    return t("titles.templateFrom", { name: context.name });
-  }
-  return t("titles.newProgram");
-}
-
-function updateLanguage(nextLang) {
-  setLanguage(nextLang);
-  applyTranslations();
-  UI.setNetworkStatus(navigator.onLine);
-
-  if (state.dbReady) {
-    UI.setDbStatus(t("status.dbReady"), "success");
-  } else if (state.dbError) {
-    UI.setDbStatus(t("status.dbError"), "error");
-  } else {
-    UI.setDbStatus(t("status.dbLoading"), "info");
-  }
-
-  UI.renderProgramsState({
-    loading: state.loading,
-    error: state.dbError,
-    programs: state.programs,
-    query: normalizeCode(UI.els.searchInput.value),
-  });
-  UI.renderTemplatesTable(state.templates || []);
-  UI.renderHistoryTable(state.history || []);
-
-  if (state.lastSummary) {
-    UI.renderSummary(state.lastSummary);
-  } else {
-    UI.renderSummary({
-      totals: [],
-      used: [],
-      missing: [],
-      warnings: [],
-      errors: [],
-      timestamp: "",
-    });
-  }
-
-  const rows = UI.getConsumptionInputRows();
-  UI.rebuildConsumptionRows(rows);
-
-  if (!UI.els.modalBackdrop.classList.contains("hidden")) {
-    const input = UI.getProgramFormInput();
-    const context = state.modalContext || { type: "new", allowCodeEdit: true };
-    const title = getModalTitle(context);
-    UI.openModal({
-      title,
-      program: {
-        ...input,
-        allowCodeEdit: context.allowCodeEdit,
-      },
-    });
-  }
-
-  if (UI.isHistorySheetOpen() && state.lastSummary) {
-    UI.updateHistorySheet(state.lastSummary);
-  }
-}
-
 function handleExportHistory() {
   if (!state.history.length) {
-    UI.setNotice(UI.els.calcMessage, t("messages.noHistoryExport"), "warn");
+    UI.setNotice(UI.els.calcMessage, "No history to export.", "warn");
     return;
   }
-  exportJson(state.history, t("messages.historyExportName"));
+  exportJson(state.history, "fertilizer-history.json");
 }
 
 async function handleClearHistory() {
   if (!state.history.length) return;
-  if (!window.confirm(t("messages.historyClearConfirm"))) return;
+  if (!window.confirm("Clear all history entries?")) return;
   try {
     await clearHistory();
     await refreshHistory();
   } catch (error) {
     UI.setNotice(
       UI.els.calcMessage,
-      error.message || t("messages.historyClearFailed"),
+      error.message || "History clear failed.",
       "error"
     );
   }
@@ -578,19 +448,6 @@ async function handleClearHistory() {
 
 function handlePrintReport() {
   window.print();
-}
-
-function handleLanguageChange() {
-  if (!UI.els.languageSelect) return;
-  updateLanguage(UI.els.languageSelect.value);
-}
-
-function handleReloadApp() {
-  if (swRegistration?.waiting) {
-    swRegistration.waiting.postMessage({ type: "SKIP_WAITING" });
-    return;
-  }
-  window.location.reload();
 }
 
 function wireEvents() {
@@ -608,50 +465,10 @@ function wireEvents() {
     onExportHistory: handleExportHistory,
     onClearHistory: handleClearHistory,
     onPrintReport: handlePrintReport,
-    onLanguageChange: handleLanguageChange,
-    onReloadApp: handleReloadApp,
-  });
-}
-
-function setupServiceWorker() {
-  if (!("serviceWorker" in navigator)) return;
-
-  navigator.serviceWorker
-    .register("/sw.js", { updateViaCache: "none" })
-    .then((registration) => {
-      swRegistration = registration;
-
-      if (registration.waiting) {
-        UI.showUpdateBanner(true);
-      }
-
-      registration.addEventListener("updatefound", () => {
-        const nextWorker = registration.installing;
-        if (!nextWorker) return;
-        nextWorker.addEventListener("statechange", () => {
-          if (
-            nextWorker.state === "installed" &&
-            navigator.serviceWorker.controller
-          ) {
-            UI.showUpdateBanner(true);
-          }
-        });
-      });
-    })
-    .catch(() => {
-      /* ignore registration errors */
-    });
-
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    window.location.reload();
   });
 }
 
 async function init() {
-  if (UI.els.languageSelect) {
-    UI.els.languageSelect.value = getLanguage();
-  }
-  applyTranslations();
   UI.setNetworkStatus(navigator.onLine);
   window.addEventListener("online", () => UI.setNetworkStatus(true));
   window.addEventListener("offline", () => UI.setNetworkStatus(false));
@@ -668,14 +485,14 @@ async function init() {
   try {
     await openDb();
     setState({ dbReady: true });
-    UI.setDbStatus(t("status.dbReady"), "success");
+    UI.setDbStatus("DB Ready", "success");
     await refreshPrograms();
     await refreshTemplates();
     await refreshHistory();
   } catch (error) {
-    const message = error.message || t("messages.dbUnavailable");
+    const message = error.message || "Database unavailable.";
     setState({ dbReady: false, dbError: message, loading: false });
-    UI.setDbStatus(t("status.dbError"), "error");
+    UI.setDbStatus("DB Error", "error");
     UI.renderProgramsState({
       loading: false,
       error: message,
@@ -687,11 +504,9 @@ async function init() {
   UI.makeConsumptionRow({ code: "N02", times: 1 });
   UI.makeConsumptionRow({ code: "N03", times: 1 });
 
-  setupServiceWorker();
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" });
+  }
 }
 
-export function initApp() {
-  if (appInitialized) return;
-  appInitialized = true;
-  init();
-}
+init();

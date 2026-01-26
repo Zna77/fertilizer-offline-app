@@ -2,15 +2,15 @@
   "name": "Fertilizer Programs Offline",
   "short_name": "Fertilizer",
   "description": "Offline-first fertilizer program manager with calculator.",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#efe8d8",
   "theme_color": "#efe8d8",
   "icons": [
     {
-      "src": "/icons/icon.svg",
+      "src": "icons/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

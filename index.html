@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#efe8d8" />
+    <title>Fertilizer Programs Offline</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">F</div>
+          <div>
+            <p class="kicker">Fertilizer Programs</p>
+            <h1>Offline Program Manager</h1>
+          </div>
+        </div>
+
+        <div class="status">
+          <span id="dbStatus" class="status-chip" data-tone="info"
+            >DB Loading</span
+          >
+          <span id="netStatus" class="status-chip" data-tone="info"
+            >Online</span
+          >
+        </div>
+
+        <div class="topbar-actions">
+          <button id="seedBtn" class="btn btn-secondary" type="button">
+            Seed
+          </button>
+          <button id="newProgramBtn" class="btn btn-primary" type="button">
+            New Program
+          </button>
+        </div>
+      </header>
+
+      <main class="container">
+        <section class="panel print-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Daily Consumption</h2>
+              <p class="muted">
+                Add program codes and times. Example: N02 x 3, N03 x 1.
+              </p>
+            </div>
+          </div>
+
+          <div class="panel-grid">
+            <div class="panel-col print-hidden">
+              <div class="stack" id="consumptionRows"></div>
+
+              <div class="row">
+                <button
+                  id="addConsumptionRowBtn"
+                  class="btn btn-secondary"
+                  type="button"
+                >
+                  Add program
+                </button>
+                <button id="calcBtn" class="btn btn-primary" type="button">
+                  Calculate
+                </button>
+              </div>
+
+              <div
+                id="calcMessage"
+                class="notice"
+                role="status"
+                aria-live="polite"
+              ></div>
+            </div>
+
+            <div class="panel-col print-report">
+              <div class="summary">
+                <div class="summary-item">
+                  <div class="muted">Programs used</div>
+                  <div id="summaryPrograms" class="summary-value">-</div>
+                </div>
+                <div class="summary-item">
+                  <div class="muted">Total items</div>
+                  <div id="summaryCount" class="summary-value">-</div>
+                </div>
+              </div>
+
+              <div class="row between report-actions">
+                <div id="reportMeta" class="report-meta muted">
+                  Last calculation: <span id="reportTimestamp">-</span>
+                </div>
+                <button id="printReportBtn" class="btn btn-secondary" type="button">
+                  Print report
+                </button>
+              </div>
+
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Fertilizer</th>
+                      <th class="right">Total</th>
+                      <th>Unit</th>
+                    </tr>
+                  </thead>
+                  <tbody id="summaryBody">
+                    <tr>
+                      <td colspan="3" class="muted">No results yet.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel print-hidden">
+          <div class="panel-head between">
+            <div>
+              <h2>Programs</h2>
+              <p class="muted">
+                Create, edit, and delete fertilizer recipes stored offline.
+              </p>
+            </div>
+            <div class="row">
+              <label class="sr-only" for="searchInput">Search programs</label>
+              <input
+                id="searchInput"
+                class="input"
+                type="search"
+                placeholder="Search program code"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th class="right">Fertilizers</th>
+                  <th class="right">Updated</th>
+                  <th class="right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="programsBody">
+                <tr>
+                  <td colspan="4" class="muted">Loading programs...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel print-hidden">
+          <div class="panel-head between">
+            <div>
+              <h2>Templates</h2>
+              <p class="muted">
+                Save programs as templates and reuse them for new programs.
+              </p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th class="right">Fertilizers</th>
+                  <th class="right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="templatesBody">
+                <tr>
+                  <td colspan="3" class="muted">No templates yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel print-hidden">
+          <div class="panel-head between">
+            <div>
+              <h2>History</h2>
+              <p class="muted">Recent calculations with timestamps.</p>
+            </div>
+            <div class="row">
+              <button id="exportHistoryBtn" class="btn btn-secondary" type="button">
+                Export JSON
+              </button>
+              <button id="clearHistoryBtn" class="btn btn-danger" type="button">
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>When</th>
+                  <th>Programs</th>
+                  <th class="right">Items</th>
+                  <th class="right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody">
+                <tr>
+                  <td colspan="4" class="muted">No history yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="modalBackdrop" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal">
+        <div class="modal-head row between">
+          <h3 id="modalTitle">New Program</h3>
+          <button id="closeModalBtn" class="icon-btn" type="button" title="Close">
+            Close
+          </button>
+        </div>
+
+        <form id="programForm" class="modal-body" autocomplete="off">
+          <div class="grid grid-2">
+            <div class="field">
+              <label class="label" for="programCode">Program code</label>
+              <input
+                id="programCode"
+                class="input"
+                placeholder="N02"
+                required
+              />
+              <div class="help muted">Unique code. Example: N01, N02.</div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="programNotes">Notes (optional)</label>
+              <input
+                id="programNotes"
+                class="input"
+                placeholder="e.g. Winter mix"
+              />
+            </div>
+          </div>
+
+          <div class="row between">
+            <label class="label">Fertilizers</label>
+            <button type="button" id="addFertRowBtn" class="btn btn-secondary">
+              Add fertilizer
+            </button>
+          </div>
+
+          <div id="fertRows" class="stack"></div>
+
+          <div class="modal-foot row between">
+            <div id="formMessage" class="notice" role="status" aria-live="polite"></div>
+            <div class="row">
+              <button
+                type="button"
+                id="deleteProgramBtn"
+                class="btn btn-danger hidden"
+              >
+                Delete
+              </button>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

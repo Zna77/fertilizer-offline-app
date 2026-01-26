@@ -1,14 +1,10 @@
 import { formatNumber } from "./models.js";
-import { getLanguage, t } from "./i18n.js";
-import { animateIn, animateList, animateOut, animatePulse } from "./motion.js";
 
 const $ = (id) => document.getElementById(id);
 const makeId = () =>
   typeof crypto !== "undefined" && crypto.randomUUID
     ? crypto.randomUUID()
     : `id-${Math.random().toString(36).slice(2)}`;
-
-let historySheetReturnFocus = null;
 
 export const els = {
   consumptionRows: $("consumptionRows"),
@@ -23,7 +19,6 @@ export const els = {
   searchInput: $("searchInput"),
   newProgramBtn: $("newProgramBtn"),
   seedBtn: $("seedBtn"),
-  languageSelect: $("languageSelect"),
 
   modalBackdrop: $("modalBackdrop"),
   modalTitle: $("modalTitle"),
@@ -45,38 +40,12 @@ export const els = {
   clearHistoryBtn: $("clearHistoryBtn"),
   printReportBtn: $("printReportBtn"),
   reportTimestamp: $("reportTimestamp"),
-
-  historySheetBackdrop: $("historySheetBackdrop"),
-  historySheetCloseBtn: $("historySheetCloseBtn"),
-  sheetSummaryBody: $("sheetSummaryBody"),
-  sheetSummaryPrograms: $("sheetSummaryPrograms"),
-  sheetSummaryCount: $("sheetSummaryCount"),
-  sheetMessage: $("sheetMessage"),
-  sheetTimestamp: $("sheetTimestamp"),
-
-  offlineBanner: $("offlineBanner"),
-  updateBanner: $("updateBanner"),
-  reloadAppBtn: $("reloadAppBtn"),
 };
 
-const dateFormatOptions = {
+const dateFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
   timeStyle: "short",
-};
-
-function formatDate(value) {
-  const formatter = new Intl.DateTimeFormat(getLanguage(), dateFormatOptions);
-  return formatter.format(new Date(value));
-}
-
-function removeRowWithAnimation(row) {
-  const animation = animateOut(row);
-  if (animation && typeof animation.then === "function") {
-    animation.then(() => row.remove());
-    return;
-  }
-  row.remove();
-}
+});
 
 export function setNotice(el, text, tone = "info") {
   el.textContent = text || "";
@@ -87,31 +56,18 @@ export function setDbStatus(text, tone = "info") {
   if (!els.dbStatus) return;
   els.dbStatus.textContent = text;
   els.dbStatus.dataset.tone = tone;
-  animatePulse(els.dbStatus);
 }
 
 export function setNetworkStatus(isOnline) {
   if (!els.netStatus) return;
-  els.netStatus.textContent = isOnline
-    ? t("status.online")
-    : t("status.offline");
+  els.netStatus.textContent = isOnline ? "Online" : "Offline";
   els.netStatus.dataset.tone = isOnline ? "info" : "warn";
-  animatePulse(els.netStatus);
-  if (els.offlineBanner) {
-    els.offlineBanner.classList.toggle("hidden", isOnline);
-  }
-}
-
-export function showUpdateBanner(show = true) {
-  if (!els.updateBanner) return;
-  els.updateBanner.classList.toggle("hidden", !show);
 }
 
 export function renderProgramsState({ loading, error, programs, query }) {
   if (loading) {
-    els.programsBody.innerHTML = `<tr><td colspan="4" class="muted">${t(
-      "table.loadingPrograms"
-    )}</td></tr>`;
+    els.programsBody.innerHTML =
+      '<tr><td colspan="4" class="muted">Loading programs...</td></tr>';
     return;
   }
 
@@ -129,16 +85,15 @@ export function renderProgramsTable(programs, query) {
     .sort((a, b) => a.code.localeCompare(b.code));
 
   if (!filtered.length) {
-    els.programsBody.innerHTML = `<tr><td colspan="4" class="muted">${t(
-      "table.noPrograms"
-    )}</td></tr>`;
+    els.programsBody.innerHTML =
+      '<tr><td colspan="4" class="muted">No programs yet. Click "New Program".</td></tr>';
     return;
   }
 
   els.programsBody.innerHTML = filtered
     .map((program) => {
       const updated = program.updatedAt
-        ? formatDate(program.updatedAt)
+        ? dateFormatter.format(new Date(program.updatedAt))
         : "-";
       const fertCount = Array.isArray(program.fertilizers)
         ? program.fertilizers.length
@@ -150,21 +105,14 @@ export function renderProgramsTable(programs, query) {
         <td class="right">${updated}</td>
         <td class="right">
           <div class="row actions">
-            <button class="btn btn-secondary" data-action="edit" data-code="${program.code}">${t(
-              "actions.edit"
-            )}</button>
-            <button class="btn btn-secondary" data-action="duplicate" data-code="${program.code}">${t(
-              "actions.duplicate"
-            )}</button>
-            <button class="btn btn-secondary" data-action="template" data-code="${program.code}">${t(
-              "actions.template"
-            )}</button>
+            <button class="btn btn-secondary" data-action="edit" data-code="${program.code}">Edit</button>
+            <button class="btn btn-secondary" data-action="duplicate" data-code="${program.code}">Duplicate</button>
+            <button class="btn btn-secondary" data-action="template" data-code="${program.code}">Template</button>
           </div>
         </td>
       </tr>`;
     })
     .join("");
-  animateList(els.programsBody);
 }
 
 export function makeConsumptionRow({ code = "", times = 1 } = {}) {
@@ -175,37 +123,26 @@ export function makeConsumptionRow({ code = "", times = 1 } = {}) {
 
   row.innerHTML = `
     <div class="field">
-      <label class="label" for="consumption-code-${rowId}">${t(
-        "labels.programCode"
-      )}</label>
-      <input class="input" id="consumption-code-${rowId}" data-role="code" placeholder="${t(
-        "placeholders.programCode"
-      )}" value="${code}" autocomplete="off">
+      <label class="label" for="consumption-code-${rowId}">Program code</label>
+      <input class="input" id="consumption-code-${rowId}" data-role="code" placeholder="N02" value="${code}" autocomplete="off">
     </div>
     <div class="field">
-      <label class="label" for="consumption-times-${rowId}">${t(
-        "labels.times"
-      )}</label>
-      <input class="input" id="consumption-times-${rowId}" data-role="times" type="number" inputmode="decimal" min="0" step="0.1" placeholder="${t(
-        "placeholders.times"
-      )}" value="${times}">
+      <label class="label" for="consumption-times-${rowId}">Times</label>
+      <input class="input" id="consumption-times-${rowId}" data-role="times" type="number" inputmode="decimal" min="0" step="0.1" placeholder="1" value="${times}">
     </div>
     <div class="field compact">
-      <label class="label" aria-hidden="true">${t("labels.remove")}</label>
-      <button class="icon-btn" data-role="remove" type="button" title="${t(
-        "labels.remove"
-      )}">${t("labels.remove")}</button>
+      <label class="label" aria-hidden="true">Remove</label>
+      <button class="icon-btn" data-role="remove" type="button" title="Remove row">Remove</button>
     </div>
   `;
 
   row.addEventListener("click", (event) => {
     const btn = event.target.closest("[data-role='remove']");
     if (!btn) return;
-    removeRowWithAnimation(row);
+    row.remove();
   });
 
   els.consumptionRows.appendChild(row);
-  animateIn(row);
 }
 
 export function getConsumptionInputRows() {
@@ -216,31 +153,25 @@ export function getConsumptionInputRows() {
   }));
 }
 
-export function rebuildConsumptionRows(rows) {
-  els.consumptionRows.innerHTML = "";
-  rows.forEach((row) => makeConsumptionRow(row));
-}
-
-function applySummaryView(view, { totals, used, missing, warnings, errors, timestamp }) {
-  if (!view?.summaryPrograms || !view?.summaryBody || !view?.summaryCount) return;
-
+export function renderSummary({ totals, used, missing, warnings, errors, timestamp }) {
   const usedText = used.length
     ? used.map((item) => `${item.code}x${item.times}`).join(", ")
     : "-";
 
-  view.summaryPrograms.textContent = usedText;
-  view.summaryCount.textContent = totals.length ? String(totals.length) : "-";
-  if (view.timestampEl) {
-    view.timestampEl.textContent = timestamp ? formatDate(timestamp) : "-";
+  els.summaryPrograms.textContent = usedText;
+  els.summaryCount.textContent = totals.length ? String(totals.length) : "-";
+  if (els.reportTimestamp) {
+    els.reportTimestamp.textContent = timestamp
+      ? dateFormatter.format(new Date(timestamp))
+      : "-";
   }
 
   if (!totals.length) {
-    view.summaryBody.removeAttribute("data-state");
-    view.summaryBody.innerHTML = `<tr><td colspan="3" class="muted">${t(
-      "table.noResults"
-    )}</td></tr>`;
+    els.summaryBody.removeAttribute("data-state");
+    els.summaryBody.innerHTML =
+      '<tr><td colspan="3" class="muted">No results yet.</td></tr>';
   } else {
-    view.summaryBody.dataset.state = "ready";
+    els.summaryBody.dataset.state = "ready";
     const rows = totals
       .sort((a, b) => a.name.localeCompare(b.name))
       .map(
@@ -252,13 +183,12 @@ function applySummaryView(view, { totals, used, missing, warnings, errors, times
         </tr>`
       )
       .join("");
-    view.summaryBody.innerHTML = rows;
+    els.summaryBody.innerHTML = rows;
   }
-  animateList(view.summaryBody);
 
   const messages = [];
   if (missing.length) {
-    messages.push(t("messages.missingPrograms", { codes: missing.join(", ") }));
+    messages.push(`Missing program(s): ${missing.join(", ")}.`);
   }
   if (warnings.length) {
     messages.push(warnings.join(" "));
@@ -267,51 +197,14 @@ function applySummaryView(view, { totals, used, missing, warnings, errors, times
     messages.push(errors.join(" "));
   }
 
-  if (view.messageEl) {
-    const tone = errors.length ? "error" : warnings.length ? "warn" : "info";
-    setNotice(view.messageEl, messages.join(" "), tone);
-  }
-}
-
-export function renderSummary(summary) {
-  const summaryView = {
-    summaryPrograms: els.summaryPrograms,
-    summaryCount: els.summaryCount,
-    summaryBody: els.summaryBody,
-    messageEl: els.calcMessage,
-    timestampEl: els.reportTimestamp,
-  };
-  applySummaryView(summaryView, summary);
-}
-
-export function renderHistorySheet(summary) {
-  const sheetView = {
-    summaryPrograms: els.sheetSummaryPrograms,
-    summaryCount: els.sheetSummaryCount,
-    summaryBody: els.sheetSummaryBody,
-    messageEl: els.sheetMessage,
-    timestampEl: els.sheetTimestamp,
-  };
-  applySummaryView(sheetView, summary);
-  openHistorySheet();
-}
-
-export function updateHistorySheet(summary) {
-  const sheetView = {
-    summaryPrograms: els.sheetSummaryPrograms,
-    summaryCount: els.sheetSummaryCount,
-    summaryBody: els.sheetSummaryBody,
-    messageEl: els.sheetMessage,
-    timestampEl: els.sheetTimestamp,
-  };
-  applySummaryView(sheetView, summary);
+  const tone = errors.length ? "error" : warnings.length ? "warn" : "info";
+  setNotice(els.calcMessage, messages.join(" "), tone);
 }
 
 export function renderTemplatesTable(templates) {
   if (!templates.length) {
-    els.templatesBody.innerHTML = `<tr><td colspan="3" class="muted">${t(
-      "table.noTemplates"
-    )}</td></tr>`;
+    els.templatesBody.innerHTML =
+      '<tr><td colspan="3" class="muted">No templates yet.</td></tr>';
     return;
   }
 
@@ -327,68 +220,50 @@ export function renderTemplatesTable(templates) {
         <td class="right">${count}</td>
         <td class="right">
           <div class="row actions">
-            <button class="btn btn-secondary" data-action="use" data-id="${template.id}">${t(
-              "actions.use"
-            )}</button>
-            <button class="btn btn-secondary" data-action="delete" data-id="${template.id}">${t(
-              "actions.delete"
-            )}</button>
+            <button class="btn btn-secondary" data-action="use" data-id="${template.id}">Use</button>
+            <button class="btn btn-secondary" data-action="delete" data-id="${template.id}">Delete</button>
           </div>
         </td>
       </tr>`;
     })
     .join("");
-  animateList(els.templatesBody);
 }
 
 export function renderHistoryTable(entries) {
   if (!entries.length) {
-    els.historyBody.innerHTML = `<tr><td colspan="4" class="muted">${t(
-      "table.noHistory"
-    )}</td></tr>`;
+    els.historyBody.innerHTML =
+      '<tr><td colspan="4" class="muted">No history yet.</td></tr>';
     return;
   }
-
-  const whenLabel = t("labels.when");
-  const programsLabel = t("labels.programs");
-  const itemsLabel = t("labels.items");
-  const actionsLabel = t("labels.actions");
 
   els.historyBody.innerHTML = entries
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .map((entry) => {
       const when = entry.createdAt
-        ? formatDate(entry.createdAt)
+        ? dateFormatter.format(new Date(entry.createdAt))
         : "-";
       const used = entry.used?.length
         ? entry.used.map((item) => `${item.code}x${item.times}`).join(", ")
         : "-";
       const missing = entry.missing?.length
-        ? t("messages.missingShort", { codes: entry.missing.join(", ") })
+        ? ` (missing: ${entry.missing.join(", ")})`
         : "";
       const count = entry.totals?.length ? entry.totals.length : 0;
       return `
       <tr>
-        <td data-label="${whenLabel}">${when}</td>
-        <td data-label="${programsLabel}">${used}${missing}</td>
-        <td class="right" data-label="${itemsLabel}">${count}</td>
-        <td class="right" data-label="${actionsLabel}">
+        <td>${when}</td>
+        <td>${used}${missing}</td>
+        <td class="right">${count}</td>
+        <td class="right">
           <div class="row actions">
-            <button class="btn btn-secondary" data-action="view" data-id="${entry.id}">${t(
-              "actions.view"
-            )}</button>
-            <button class="btn btn-secondary" data-action="export" data-id="${entry.id}">${t(
-              "actions.export"
-            )}</button>
-            <button class="btn btn-secondary" data-action="delete" data-id="${entry.id}">${t(
-              "actions.delete"
-            )}</button>
+            <button class="btn btn-secondary" data-action="view" data-id="${entry.id}">View</button>
+            <button class="btn btn-secondary" data-action="export" data-id="${entry.id}">Export</button>
+            <button class="btn btn-secondary" data-action="delete" data-id="${entry.id}">Delete</button>
           </div>
         </td>
       </tr>`;
     })
     .join("");
-  animateList(els.historyBody);
 }
 
 export function openModal({ title, program }) {
@@ -426,42 +301,6 @@ export function closeModal() {
   els.modalBackdrop.classList.add("hidden");
 }
 
-export function openHistorySheet() {
-  if (!els.historySheetBackdrop) return;
-  historySheetReturnFocus =
-    document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  els.historySheetBackdrop.classList.add("open");
-  els.historySheetBackdrop.setAttribute("aria-hidden", "false");
-  els.historySheetBackdrop.removeAttribute("inert");
-  document.body.classList.add("sheet-open");
-  if (els.historySheetCloseBtn) {
-    requestAnimationFrame(() => {
-      els.historySheetCloseBtn?.focus();
-    });
-  }
-}
-
-export function closeHistorySheet() {
-  if (!els.historySheetBackdrop) return;
-  const restoreTarget = historySheetReturnFocus;
-  if (restoreTarget && restoreTarget.isConnected) {
-    restoreTarget.focus();
-  } else if (els.newProgramBtn) {
-    els.newProgramBtn.focus();
-  } else {
-    els.historySheetCloseBtn?.blur();
-  }
-  historySheetReturnFocus = null;
-  els.historySheetBackdrop.classList.remove("open");
-  els.historySheetBackdrop.setAttribute("aria-hidden", "true");
-  els.historySheetBackdrop.setAttribute("inert", "");
-  document.body.classList.remove("sheet-open");
-}
-
-export function isHistorySheetOpen() {
-  return !!els.historySheetBackdrop?.classList.contains("open");
-}
-
 export function addFertilizerRow(data = {}) {
   const rowId = makeId();
   const name = data.name ?? "";
@@ -474,44 +313,33 @@ export function addFertilizerRow(data = {}) {
 
   row.innerHTML = `
     <div class="field">
-      <label class="label" for="fert-name-${rowId}">${t(
-        "labels.fertilizer"
-      )}</label>
-      <input class="input" id="fert-name-${rowId}" data-role="name" placeholder="${t(
-        "placeholders.fertilizerName"
-      )}" value="${name}">
+      <label class="label" for="fert-name-${rowId}">Fertilizer</label>
+      <input class="input" id="fert-name-${rowId}" data-role="name" placeholder="NITRATE CALCIUM" value="${name}">
     </div>
     <div class="field">
-      <label class="label" for="fert-value-${rowId}">${t(
-        "labels.value"
-      )}</label>
-      <input class="input" id="fert-value-${rowId}" data-role="value" placeholder="${t(
-        "placeholders.fertilizerValue"
-      )}" inputmode="decimal" value="${value}">
+      <label class="label" for="fert-value-${rowId}">Value</label>
+      <input class="input" id="fert-value-${rowId}" data-role="value" placeholder="0.35" inputmode="decimal" value="${value}">
     </div>
     <div class="field compact">
-      <label class="label" for="fert-unit-${rowId}">${t("labels.unit")}</label>
+      <label class="label" for="fert-unit-${rowId}">Unit</label>
       <select class="select" id="fert-unit-${rowId}" data-role="unit">
         <option value="kg" ${unit === "kg" ? "selected" : ""}>kg</option>
         <option value="L" ${unit === "L" ? "selected" : ""}>L</option>
       </select>
     </div>
     <div class="field compact">
-      <label class="label" aria-hidden="true">${t("labels.remove")}</label>
-      <button type="button" class="icon-btn" data-role="remove" title="${t(
-        "labels.remove"
-      )}">${t("labels.remove")}</button>
+      <label class="label" aria-hidden="true">Remove</label>
+      <button type="button" class="icon-btn" data-role="remove" title="Remove fertilizer">Remove</button>
     </div>
   `;
 
   row.addEventListener("click", (event) => {
     const btn = event.target.closest("[data-role='remove']");
     if (!btn) return;
-    removeRowWithAnimation(row);
+    row.remove();
   });
 
   els.fertRows.appendChild(row);
-  animateIn(row);
 }
 
 export function getProgramFormInput() {
@@ -540,9 +368,6 @@ export function initUI(handlers) {
   if (els.historyBody) {
     els.historyBody.addEventListener("click", handlers.onHistoryAction);
   }
-  if (els.languageSelect && handlers.onLanguageChange) {
-    els.languageSelect.addEventListener("change", handlers.onLanguageChange);
-  }
 
   els.newProgramBtn.addEventListener("click", handlers.onNewProgram);
   els.seedBtn.addEventListener("click", handlers.onSeed);
@@ -564,18 +389,5 @@ export function initUI(handlers) {
   }
   if (els.printReportBtn) {
     els.printReportBtn.addEventListener("click", handlers.onPrintReport);
-  }
-
-  if (els.historySheetCloseBtn) {
-    els.historySheetCloseBtn.addEventListener("click", closeHistorySheet);
-  }
-  if (els.historySheetBackdrop) {
-    els.historySheetBackdrop.addEventListener("click", (event) => {
-      if (event.target === els.historySheetBackdrop) closeHistorySheet();
-    });
-  }
-
-  if (els.reloadAppBtn && handlers.onReloadApp) {
-    els.reloadAppBtn.addEventListener("click", handlers.onReloadApp);
   }
 }

@@ -1,5 +1,4 @@
 import { normalizeName, normalizeUnit, parseNumber } from "./models.js";
-import { t } from "./i18n.js";
 
 function mergeFertilizers(programCode, fertilizers) {
   const combined = new Map();
@@ -12,18 +11,18 @@ function mergeFertilizers(programCode, fertilizers) {
     const value = parseNumber(fertilizer.value);
 
     if (!name) {
-      warnings.push(t("calc.skippedUnnamed", { code: programCode }));
+      warnings.push(`Skipped unnamed fertilizer in program ${programCode}.`);
       return;
     }
 
     if (!unit) {
-      warnings.push(t("calc.skippedUnit", { name, code: programCode }));
+      warnings.push(`Skipped ${name} in ${programCode}: unit must be kg or L.`);
       return;
     }
 
     if (!Number.isFinite(value) || value <= 0) {
       warnings.push(
-        t("calc.skippedValue", { name, code: programCode })
+        `Skipped ${name} in ${programCode}: value must be greater than 0.`
       );
       return;
     }
@@ -37,19 +36,14 @@ function mergeFertilizers(programCode, fertilizers) {
     const existing = combined.get(key);
     if (existing.unit !== unit) {
       errors.push(
-        t("calc.unitMismatchProgram", {
-          code: programCode,
-          name,
-          unitA: existing.unit,
-          unitB: unit,
-        })
+        `Unit mismatch inside program ${programCode} for ${name}: ${existing.unit} vs ${unit}.`
       );
       return;
     }
 
     existing.value += value;
     warnings.push(
-      t("calc.duplicateCombined", { name, code: programCode })
+      `Duplicate fertilizer ${name} in program ${programCode}; values combined.`
     );
   });
 
@@ -88,11 +82,7 @@ export function aggregateConsumption(consumptionRows, programsByCode) {
       const existing = totals.get(key);
       if (existing.unit !== fertilizer.unit) {
         errors.push(
-          t("calc.unitMismatchTotals", {
-            name: key,
-            unitA: existing.unit,
-            unitB: fertilizer.unit,
-          })
+          `Unit mismatch for ${key}: ${existing.unit} vs ${fertilizer.unit}.`
         );
         return;
       }

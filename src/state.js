@@ -5,8 +5,6 @@ export const state = {
   programsByCode: new Map(),
   templates: [],
   history: [],
-  lastSummary: null,
-  modalContext: null,
   loading: true,
   dbReady: false,
   dbError: "",
